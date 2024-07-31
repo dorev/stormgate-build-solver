@@ -8,14 +8,38 @@ namespace SGBuilds
 {
     using ErrorCode = int;
     constexpr ErrorCode Success = 0;
-    constexpr ErrorCode NotYetImplemented = -1;
+    constexpr ErrorCode InvalidObjectList = 0;
+    constexpr ErrorCode NotYetImplemented = -99;
+
+    #define CHECK_ERROR(error) if ((error) != Success) { return error; }
+
+    struct BuildOrderStep
+    {
+        const int supply;
+        const int time;
+        const ObjectID buy;
+    };
 
     class Solver
     {
     public:
         ErrorCode Solve(ObjectID* objects, unsigned objectsSize)
         {
-            return NotYetImplemented;
+            _TargetObjectList = std::vector<ObjectID>(objects, objects + objectsSize);
+
+            ErrorCode result = ValidateObjectList(_Faction);
+            CHECK_ERROR(result);
+
+            result = SummarizeRequirements();
+            CHECK_ERROR(result);
+
+            result = InitGameGraph();
+            CHECK_ERROR(result);
+
+
+
+
+            return Success;
         }
 
         unsigned GetBuildOrderSize()
@@ -27,5 +51,16 @@ namespace SGBuilds
         {
             return NotYetImplemented;
         }
+
+    private:
+        ErrorCode ValidateObjectList(ObjectID& faction);
+        ErrorCode SummarizeRequirements();
+        ErrorCode InitGameGraph();
+
+
+    private:
+        ObjectID _Faction;
+        std::vector<ObjectID> _TargetObjectList;
+        std::vector<ObjectID> _Requirements;
     };
 }

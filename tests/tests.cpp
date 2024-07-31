@@ -4,6 +4,11 @@
 
 using namespace SGBuilds;
 
+TEST(Database, Instanciate)
+{
+    Database db;
+}
+
 TEST(BuildOrder, QuickdrawExos10MedTechs2)
 {
 

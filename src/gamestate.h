@@ -2,33 +2,55 @@
 
 #include "common.h"
 
+#include <vector>
+
 namespace SGBuilds
 {
-    struct PlayerAssets
-    {
-        int luminite;
-        int theurium;
-        std::vector<Building> buildings;
-        std::vector<SupplyBuilding> supplyBuilding;
-        std::vector<Unit> units;
-        std::vector<Worker> workers;
-        std::vector<Upgrade> upgrades;
-    };
-
     class GameState
     {
     public:
-        int GetCurrentSupplyCap() const
+        GameState(ObjectID factionId)
         {
-
         }
 
-        int CanAfford(ObjectID object)
+        void Update(int timeIncrement = 1)
         {
+            // update buildings
+        }
 
+        int GetCurrentSupplyCap() const
+        {
+        }
+
+        int WillExceedSupplyCap(ObjectID unit) const
+        {
+        }
+
+        bool CanAfford(ObjectID object) const
+        {
+        }
+
+        int Buy(ObjectID object)
+        {
+        }
+
+        int LuminiteIsSaturated() const
+        {
         }
 
     private:
-        PlayerAssets assets;
+        int time;
+        float luminite;
+        float therium;
+        std::vector<Unit> units;
+        std::vector<Unit> workers;
+        std::vector<Building> buildings;
+        std::vector<Upgrade> upgrades;
+        std::vector<Object> pendingCompletion;
+        int workersOnLuminite;
+        int workersOnTherium;
+        int workersBuilding;
     };
+
+    // I will probably need something for faction behaviours for building
 }

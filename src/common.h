@@ -1,22 +1,21 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
 namespace SGBuilds
 {
-    using ObjectID = uint32_t;
+    using ObjectID = unsigned;
 
     namespace ID
     {
         constexpr ObjectID Vanguard                      = 0x01000000;
         constexpr ObjectID Infernal                      = 0x02000000;
         constexpr ObjectID Celestial                     = 0x04000000;
+        constexpr ObjectID FactionMask                   = 0xFF000000;
 
         constexpr ObjectID Building                      = 0x00010000;
         constexpr ObjectID Unit                          = 0x00020000;
         constexpr ObjectID Upgrade                       = 0x00040000;
         constexpr ObjectID Spell                         = 0x00080000;
+        constexpr ObjectID ObjectTypeMask                = 0x00FF0000;
 
         constexpr ObjectID CommandPost                   = Vanguard | Building | 0x0001;
         constexpr ObjectID CentralCommand                = Vanguard | Building | 0x0002;
@@ -64,50 +63,66 @@ namespace SGBuilds
 
     struct Cost
     {
-        int time;
-        int luminite;
-        int theurium;
+        const int time;
+        const float luminite;
+        const float therium;
     };
 
-    struct Buildable
+    struct Object
     {
         const ObjectID id;
         const Cost cost;
         const ObjectID requirements;
+        float completion;
 
         operator ObjectID() const { return id; }
+
+        Object(ObjectID id, Cost cost, ObjectID requirements)
+            : id(id), cost(cost)
+            , requirements(requirements)
+        {
+        }
+
+        virtual ~Object()
+        {
+        }
     };
 
-    struct Building : Buildable
+    struct Building : Object
     {
         const ObjectID upgradable;
-    };
-
-    struct SupplyBuilding : Building
-    {
         const int supply;
+
+        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID upgradable = 0, int supply = 0)
+            : Object(id, cost, requirements)
+            , upgradable(upgradable)
+            , supply(supply)
+        {
+        }
     };
 
-    struct Unit : Buildable
+    struct Unit : Object
     {
         const int supply;
         const ObjectID producer;
-    };
-
-    struct Worker : Unit
-    {
         const float luminitePerSecond;
-        const float theuriumPerSecond;
+        const float theriumPerSecond;
+
+        Unit(ObjectID id, Cost cost, ObjectID requirements, int supply, ObjectID producer, float luminitePerSecond = 0.0f, float theriumPerSecond = 0.0f)
+            : Object(id, cost, requirements)
+            , supply(supply)
+            , producer(producer)
+            , luminitePerSecond(luminitePerSecond)
+            , theriumPerSecond(theriumPerSecond)
+        {
+        }
     };
 
-    struct Upgrade : Buildable
+    struct Upgrade : Object
     {
+        Upgrade(ObjectID id, Cost cost, ObjectID requirements)
+            : Object(id, cost, requirements)
+        {
+        }
     };
-
-    struct BuildOrderStep
-    {
-        const int supply;
-        const ObjectID purchase;
-    };
-
 }
