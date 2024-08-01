@@ -77,8 +77,9 @@ namespace SGBuilds
 
         operator ObjectID() const { return id; }
 
-        Object(ObjectID id, Cost cost, ObjectID requirements)
-            : id(id), cost(cost)
+        Object(ObjectID id = 0, Cost cost = {0, 0}, ObjectID requirements = 0)
+            : id(id)
+            , cost(cost)
             , requirements(requirements)
         {
         }

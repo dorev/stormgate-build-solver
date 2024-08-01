@@ -1,13 +1,16 @@
 #pragma once
 
 #include "model.h"
+#include "errorcodes.h"
 
 #include <map>
 #include <memory>
 
 // Therium regeneration =~ 3.125/s
 // Sustainable harvest -> 5 workers
- 
+
+#define CHECK_OBJECT(object) if (object.id == 0) { return NoData; }
+
 namespace SGBuilds
 {
     class Database
@@ -15,7 +18,7 @@ namespace SGBuilds
     private:
         const std::map<ObjectID, std::shared_ptr<Object>> _Data;
 
-        static const auto& GetInstance()
+        static const auto& GetData()
         {
             static Database instance;
             return instance._Data;
@@ -25,9 +28,13 @@ namespace SGBuilds
         template <class T = Object>
         static const T& Get(ObjectID id)
         {
-            // TODO: This method might be unsafe if we're calling an undocumented ID
-            //       Add a dummy object, or assert or something
-            return *GetInstance().at(id);
+            const auto itr = GetData().find(id);
+            if (itr == GetData().end())
+            {
+                return Object();
+            }
+
+            return *static_cast<const T*>(itr->second.get());
         }
 
         Database()

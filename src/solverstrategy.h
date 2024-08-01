@@ -14,11 +14,7 @@ namespace SGBuilds
     class SolverStrategy
     {
     public:
-        virtual ErrorCode PlanNextStep(const std::vector<Target>& targets, NodePtr& node) = 0;
-        // Check what requirements can be met next
-        // Check if we can afford/produce a worker instead 
-        // Create as many branches as we have options
-
+        virtual ErrorCode Update(const std::vector<Target>& targets, NodePtr& node) = 0;
     };
 
     using SolverStrategyPtr = std::shared_ptr<SolverStrategy>;
@@ -26,8 +22,20 @@ namespace SGBuilds
     class VanguardStrategy : public SolverStrategy
     {
     public:
-        ErrorCode PlanNextStep(const std::vector<Target>& targets, NodePtr& node) override
+        ErrorCode Update(const std::vector<Target>& targets, NodePtr& node) override
         {
+            if (!node->children.empty())
+            {
+                return MustNotUpdateNodeWithChildren;
+            }
+
+            GameState& state = node->state;
+
+            // List requirements left
+            // Filter out inaccessible objects (because of lacking prereqs)
+            // Start a branch for each possible choice
+            // Consider the possibility of constructing multiple production buildings
+
             return NotYetImplemented;
         }
     };

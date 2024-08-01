@@ -106,19 +106,49 @@ namespace SGBuilds
             return _Time;
         }
 
+        ObjectID GetCurrentTarget() const
+        {
+            return _CurrentTarget;
+        }
+
+        ErrorCode SetCurrentTarget(ObjectID objectId)
+        {
+            if (_CurrentTarget != 0)
+            {
+                return StateAlreadyHasATarget;
+            }
+
+            _CurrentTarget = objectId;
+        }
+
+        ErrorCode CanProduce(ObjectID objectId) const
+        {
+            return NotYetImplemented;
+        }
+
+        ErrorCode Buy(ObjectID objectId)
+        {
+            const Object& object = Database::Get(objectId);
+            CHECK_OBJECT(object);
+
+            if (object.cost.luminite >= _Luminite || object.cost.therium >= _Therium)
+            {
+                return NotEnoughResources;
+            }
+
+            _Luminite -= object.cost.luminite;
+            _Therium -= object.cost.therium;
+
+            _PendingObjects.emplace_back(object);
+
+            return Success;
+        }
+
         int GetCurrentSupplyCap() const
         {
         }
 
         int WillExceedSupplyCap(ObjectID unit) const
-        {
-        }
-
-        bool CanAfford(ObjectID object) const
-        {
-        }
-
-        int Buy(ObjectID object)
         {
         }
 
@@ -148,6 +178,7 @@ namespace SGBuilds
         int _WorkersOnLuminite;
         int _WorkersOnTherium;
         int _WorkersBuilding;
+        ObjectID _CurrentTarget;
         bool _HasReachedTarget;
     };
 }

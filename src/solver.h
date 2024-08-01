@@ -175,7 +175,7 @@ namespace SGBuilds
                     }
                     else
                     {
-                        result = _SolverStrategy->PlanNextStep(_ObjectTargets, node);
+                        result = _SolverStrategy->Update(_ObjectTargets, node);
                         CHECK_ERROR(result);
                     }
                 }
