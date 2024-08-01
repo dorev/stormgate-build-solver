@@ -125,4 +125,10 @@ namespace SGBuilds
         {
         }
     };
+
+    struct Target
+    {
+        const ObjectID id;
+        const int count;
+    };
 }
