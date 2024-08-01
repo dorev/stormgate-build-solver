@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "model.h"
 
 #include <map>
 #include <memory>
@@ -22,10 +22,12 @@ namespace SGBuilds
         }
 
     public:
-        template <class T>
+        template <class T = Object>
         static const T& Get(ObjectID id)
         {
-            return *static_pointer_cast<T>(GetInstance().at(id));
+            // TODO: This method might be unsafe if we're calling an undocumented ID
+            //       Add a dummy object, or assert or something
+            return *GetInstance().at(id);
         }
 
         Database()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "model.h"
 
 #include <vector>
 
@@ -8,14 +8,26 @@ namespace SGBuilds
 {
     class GameState
     {
+    private:
+        static constexpr float TimeIncrementPerUpdate = 1.0f;
+
     public:
-        GameState(ObjectID factionId)
+        ErrorCode Reset(ObjectID faction)
         {
+            return NotYetImplemented;
         }
 
-        void Update(int timeIncrement = 1)
+        ErrorCode Update()
         {
-            // update buildings
+            ErrorCode result = Success;
+
+            result = UpdateResources();
+            CHECK_ERROR(result);
+
+            result = UpdatePendingObjects();
+            CHECK_ERROR(result);
+
+            return result;
         }
 
         int GetCurrentSupplyCap() const
@@ -39,6 +51,17 @@ namespace SGBuilds
         }
 
     private:
+        ErrorCode UpdateResources()
+        {
+            return NotYetImplemented;
+        }
+
+        ErrorCode UpdatePendingObjects()
+        {
+            return NotYetImplemented;
+        }
+
+    private:
         int time;
         float luminite;
         float therium;
@@ -46,11 +69,9 @@ namespace SGBuilds
         std::vector<Unit> workers;
         std::vector<Building> buildings;
         std::vector<Upgrade> upgrades;
-        std::vector<Object> pendingCompletion;
+        std::vector<Object> pendingObjects;
         int workersOnLuminite;
         int workersOnTherium;
         int workersBuilding;
     };
-
-    // I will probably need something for faction behaviours for building
 }

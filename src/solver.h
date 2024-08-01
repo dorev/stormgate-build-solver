@@ -1,18 +1,16 @@
 #pragma once
 
-#include "common.h"
+#include "model.h"
+#include "errorcodes.h"
 #include "database.h"
 #include "gamestate.h"
+#include "buildordergraph.h"
+
+#include <vector>
+#include <unordered_set>
 
 namespace SGBuilds
 {
-    using ErrorCode = int;
-    constexpr ErrorCode Success = 0;
-    constexpr ErrorCode InvalidObjectList = 0;
-    constexpr ErrorCode NotYetImplemented = -99;
-
-    #define CHECK_ERROR(error) if ((error) != Success) { return error; }
-
     struct BuildOrderStep
     {
         const int supply;
@@ -27,24 +25,24 @@ namespace SGBuilds
         {
             _TargetObjectList = std::vector<ObjectID>(objects, objects + objectsSize);
 
-            ErrorCode result = ValidateObjectList(_Faction);
+            ErrorCode result = ValidateObjectList();
             CHECK_ERROR(result);
 
             result = SummarizeRequirements();
             CHECK_ERROR(result);
 
-            result = InitGameGraph();
+            result = InitGraph();
             CHECK_ERROR(result);
 
-
-
+            result = ProcessGraph();
+            CHECK_ERROR(result);
 
             return Success;
         }
 
-        unsigned GetBuildOrderSize()
+        ErrorCode GetBuildOrderSize(unsigned& buildOrderSize)
         {
-            return 0;
+            return NotYetImplemented;
         }
 
         ErrorCode ReadAndClearBuildOrder(BuildOrderStep*& buildOrderSteps)
@@ -53,14 +51,63 @@ namespace SGBuilds
         }
 
     private:
-        ErrorCode ValidateObjectList(ObjectID& faction);
-        ErrorCode SummarizeRequirements();
-        ErrorCode InitGameGraph();
+        ErrorCode ValidateObjectList()
+        {
+            if (_TargetObjectList.empty())
+            {
+                return EmptyObjectList;
+            }
 
+            // Confirm that all objects belong to the same faction
+            ObjectID faction = _TargetObjectList[0] & ID::FactionMask;
+            for (ObjectID id : _TargetObjectList)
+            {
+                if ((id & ID::FactionMask) != faction)
+                {
+                    return MultipleFactionsInList;
+                }
+            }
+
+            return Success;
+        }
+
+        ErrorCode SummarizeRequirements()
+        {
+            std::unordered_set<ObjectID> uniqueObjectIds;
+            for (ObjectID id : uniqueObjectIds)
+            {
+                uniqueObjectIds.insert(id);
+            }
+
+            for (ObjectID id : uniqueObjectIds)
+            {
+                _Requirements |= Database::Get(id).requirements;
+            }
+
+            return Success;
+        }
+
+        ErrorCode InitGraph()
+        {
+            GameState rootState;
+            rootState.Reset(_Faction);
+            _Graph.AddNode(rootState);
+
+            return Success;
+        }
+
+        ErrorCode ProcessGraph()
+        {
+            // Check what requirements are met
+            // Check what requirements can be met next
+            // Check if we can afford/produce a worker instead
+            return NotYetImplemented;
+        }
 
     private:
         ObjectID _Faction;
         std::vector<ObjectID> _TargetObjectList;
-        std::vector<ObjectID> _Requirements;
+        ObjectID _Requirements;
+        BuildOrderGraph _Graph;
     };
 }
