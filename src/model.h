@@ -72,7 +72,12 @@ namespace SGBuilds
 
     }
 
-    using StatusID = int;
+    inline ObjectID DetectFaction(const ObjectID& id)
+    {
+        return id & ID::FactionMask;
+    }
+
+    using StatusID = unsigned;
 
     namespace Status
     {
@@ -84,6 +89,15 @@ namespace SGBuilds
         constexpr StatusID CollectingTherium            = 5;
     }
 
+    using DecisionID = unsigned;
+
+    namespace Decision
+    {
+        constexpr DecisionID    Macro = 0;
+        constexpr DecisionID    Tech = 0;
+        constexpr DecisionID    Produce = 0;
+    }
+
     struct Cost
     {
         const int time;
@@ -92,6 +106,7 @@ namespace SGBuilds
     };
 
 
+    struct Target;
     struct Object
     {
         const ObjectID id;
@@ -138,6 +153,11 @@ namespace SGBuilds
             }
 
             return Success;
+        }
+
+        bool IsIdle() const
+        {
+            return status == Status::Idle;
         }
     };
 
@@ -188,19 +208,41 @@ namespace SGBuilds
     {
         ObjectID id = 0;
         int count = 1;
+
+        operator ObjectID() const { return id; }
     };
 
     template <class T>
-    bool ContainsID(const T& container, ObjectID id)
+    inline bool ContainsID(const T& container, ObjectID id)
     {
         auto itr = std::find_if(container.begin(), container.end(), [id](const Object& object) { return object.id == id; });
         return itr != container.end();
     }
 
     template <>
-    bool ContainsID(const std::vector<Target>& container, ObjectID id)
+    inline bool ContainsID(const std::vector<Target>& container, ObjectID id)
     {
         auto itr = std::find_if(container.begin(), container.end(), [id](const Target& target) { return target.id == id; });
         return itr != container.end();
+    }
+
+    inline bool operator==(const Object& object, const Target& target)
+    {
+        return object.id == target.id;
+    }
+    
+    inline bool operator==(const Target& target, const Object& object)
+    {
+        return object == target;
+    }
+
+    inline bool operator!=(const Object& object, const Target& target)
+    {
+        return !(object == target);
+    }
+    
+    inline bool operator!=(const Target& target, const Object& object)
+    {
+        return object != target;
     }
 }

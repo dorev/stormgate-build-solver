@@ -1,6 +1,7 @@
 #include "gtest/src/gtest-all.cc"
 
 #include "solver.h"
+#include "database.h"
 
 using namespace SGBuilds;
 
