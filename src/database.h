@@ -83,6 +83,7 @@ namespace SGBuilds
                     (
                         ID::QuickdrawHustle,
                         Cost{60, 100, 100},
+                        ID::BiokineticsLab,
                         ID::BiokineticsLab
                     )
                 },

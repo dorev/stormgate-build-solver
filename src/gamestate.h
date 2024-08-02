@@ -180,25 +180,23 @@ namespace SGBuilds
             result = IsAllowedByTech(object, canProduce);
             CHECK_ERROR(result);
 
-            // Do we have more producer building than pending unit in production
+            // Find if we have a producer building available
             if (objectId & ID::Unit)
             {
                 ObjectID producerBuildingId = static_cast<const Unit&>(object).producer;
                 int producerBuildingCount = 0;
                 for (const Building& building : _Buildings)
                 {
-                    if (building.id == producerBuildingId)
+                    if (building.id == producerBuildingId && building.status == Status::Idle)
                     {
-                        producerBuildingCount++;
+                        canProduce = true;
+                        break;
                     }
                 }
-
-                // CATCH UP HERE
             }
 
             return Success;
         }
-
 
         ErrorCode CanAffordAndProduce(ObjectID objectId, bool& canAffordAndProduce)
         {
