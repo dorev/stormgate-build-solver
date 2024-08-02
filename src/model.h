@@ -93,9 +93,10 @@ namespace SGBuilds
 
     namespace Decision
     {
-        constexpr DecisionID    Macro = 0;
-        constexpr DecisionID    Tech = 0;
-        constexpr DecisionID    Produce = 0;
+        constexpr DecisionID Macro                      = 0;
+        constexpr DecisionID Tech                       = 1;
+        constexpr DecisionID Produce                    = 2;
+        constexpr DecisionID IncreaseSupply             = 3;
     }
 
     struct Cost
@@ -105,8 +106,6 @@ namespace SGBuilds
         const float therium;
     };
 
-
-    struct Target;
     struct Object
     {
         const ObjectID id;

@@ -17,6 +17,7 @@ namespace SGBuilds
         // Progress on current target
         // Validate the intention of the current node
         // See if we can take a macro, tech, or producing decision and branch form the tree if possible
+        // Don't forget to consider the idea of increasing supply! ... or should increasing supply be part of macroing?
 
         // List targets yet to be completed
         std::vector<Target> remainingTargets;
