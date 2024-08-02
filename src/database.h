@@ -10,6 +10,7 @@
 // Sustainable harvest -> 5 workers
 
 #define CHECK_OBJECT(object) if (object.id == 0) { return NoData; }
+#define GetObject(variableName, objectId) const Object& variableName = Database::Get(objectId); CHECK_OBJECT(variableName)
 
 namespace SGBuilds
 {
@@ -92,7 +93,8 @@ namespace SGBuilds
                         Cost{90, 400, 0},
                         0,
                         ID::CentralCommand,
-                        10
+                        99,
+                        true
                     )
                 },
                 {
@@ -103,7 +105,8 @@ namespace SGBuilds
                         Cost{40, 200, 100},
                         ID::CommandPost | ID::Barracks,
                         ID::HighCommand,
-                        10
+                        99,
+                        true
                     )
                 },
                 {
@@ -112,7 +115,10 @@ namespace SGBuilds
                     (
                         ID::Barracks,
                         Cost{40, 150, 0},
-                        ID::CommandPost
+                        ID::CommandPost,
+                        0,
+                        0,
+                        true
                     )
                 },
                 {
@@ -122,8 +128,9 @@ namespace SGBuilds
                         ID::CentralCommand,
                         Cost{20, 200, 0},
                         0,
-                        ID::HighCommand,
-                        10
+                        ID::SolarHabitat | ID::Rampart,
+                        10,
+                        false
                     )
                 }
             }

@@ -2,8 +2,6 @@
 
 #include "model.h"
 
-#include <vector>
-
 namespace SGBuilds
 {
     class GameState
@@ -19,7 +17,7 @@ namespace SGBuilds
 
         ErrorCode Update(const std::vector<Target>& targets)
         {
-            if (_HasReachedTarget)
+            if (_HasReachedTargets)
             {
                 return Success;
             }
@@ -35,69 +33,73 @@ namespace SGBuilds
             return result;
         }
 
-        ErrorCode HasReachedTargets(const std::vector<Target>& targets, bool& hasReachedTarget)
+        ErrorCode HasReachedTarget(const Target& target, bool& hasReachedTarget)
         {
-            if (_HasReachedTarget)
+            int targetCount = 0;
+            ObjectID objectType = target.id & ID::ObjectTypeMask;
+
+            // TODO: there is probably a way to make this prettier...
+            switch (objectType)
             {
-                hasReachedTarget = true;
-                return Success;
+            case ID::Building:
+                for (const Object& object : _Buildings)
+                {
+                    if (object.id == target.id)
+                    {
+                        targetCount++;
+                    }
+                }
+                break;
+
+            case ID::Unit:
+                for (const Object& object : _Units)
+                {
+                    if (object.id == target.id)
+                    {
+                        targetCount++;
+                    }
+                }
+                break;
+
+            case ID::Upgrade:
+                for (const Object& object : _Upgrades)
+                {
+                    if (object.id == target.id)
+                    {
+                        targetCount++;
+                    }
+                }
+                break;
+
+            default:
+                return InvalidObjectType;
             }
-            else
+
+            hasReachedTarget = targetCount < target.count;
+
+            return Success;
+        }
+
+        ErrorCode HasReachedTargets(const std::vector<Target>& targets, bool& hasReachedTargets)
+        {
+            if (_HasReachedTargets)
             {
-                hasReachedTarget = false;
+                hasReachedTargets = true;
+                return Success;
             }
 
             for (const Target& target : targets)
             {
-                int targetCount = 0;
-                ObjectID objectType = target.id & ID::ObjectTypeMask;
+                ErrorCode result = HasReachedTarget(target, hasReachedTargets);
+                CHECK_ERROR(result);
 
-                // TODO: there is probably a way to make this prettier...
-                switch (objectType)
+                if (!hasReachedTargets)
                 {
-                case ID::Building:
-                    for (const Object& object : _Buildings)
-                    {
-                        if (object.id == target.id)
-                        {
-                            targetCount++;
-                        }
-                    }
-                    break;
-
-                case ID::Unit:
-                    for (const Object& object : _Units)
-                    {
-                        if (object.id == target.id)
-                        {
-                            targetCount++;
-                        }
-                    }
-                    break;
-
-                case ID::Upgrade:
-                    for (const Object& object : _Upgrades)
-                    {
-                        if (object.id == target.id)
-                        {
-                            targetCount++;
-                        }
-                    }
-                    break;
-
-                default:
-                    return InvalidObjectType;
-                }
-
-                if (targetCount < target.count)
-                {
-                    hasReachedTarget = false;
                     return Success;
                 }
-                continue;
             }
 
-            hasReachedTarget = true;
+            _HasReachedTargets = true;
             return Success;
         }
 
@@ -121,15 +123,30 @@ namespace SGBuilds
             _CurrentTarget = objectId;
         }
 
-        ErrorCode CanProduce(ObjectID objectId) const
+        ErrorCode CanProduce(ObjectID objectId, bool& canProduce) const
         {
-            return NotYetImplemented;
+            GetObject(object, objectId);
+            std::vector<ObjectID> requiredBuildings;
+
+            ErrorCode result = object.ExpandRequirements(requiredBuildings);
+            CHECK_ERROR(result);
+
+            for (const ObjectID id : requiredBuildings)
+            {
+                if (ContainsID(requiredBuildings, id))
+                {
+                    canProduce = false;
+                    return Success;
+                }
+            }
+
+            canProduce = true;
+            return Success;
         }
 
         ErrorCode Buy(ObjectID objectId)
         {
-            const Object& object = Database::Get(objectId);
-            CHECK_OBJECT(object);
+            GetObject(object, objectId);
 
             if (object.cost.luminite >= _Luminite || object.cost.therium >= _Therium)
             {
@@ -179,6 +196,6 @@ namespace SGBuilds
         int _WorkersOnTherium;
         int _WorkersBuilding;
         ObjectID _CurrentTarget;
-        bool _HasReachedTarget;
+        bool _HasReachedTargets;
     };
 }

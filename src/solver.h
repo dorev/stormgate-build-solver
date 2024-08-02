@@ -88,9 +88,9 @@ namespace SGBuilds
             {
                 // Find if a target already exists for that ID
                 int objectTargetIndex = -1;
-                for (int i = 0; i < _ObjectTargets.size(); ++i)
+                for (int i = 0; i < _Targets.size(); ++i)
                 {
-                    if (_ObjectTargets[i].id == id)
+                    if (_Targets[i].id == id)
                     {
                         objectTargetIndex = i;
                         break;
@@ -100,11 +100,33 @@ namespace SGBuilds
                 // Update or create the target
                 if (objectTargetIndex >= 0)
                 {
-                    (*const_cast<int*>(&_ObjectTargets[objectTargetIndex].count))++;
+                    (*const_cast<int*>(&_Targets[objectTargetIndex].count))++;
                 }
                 else
                 {
-                    _ObjectTargets.push_back({id, 1});
+                    _Targets.push_back({id, 1});
+                }
+            }
+
+            // Add targets for missing required objects (ex. missing production buildings for target units)
+            // Production building identified that way will have a count of 0, to indicate an arbitrary count
+            for (const Target& target : _Targets)
+            {
+                GetObject(object, target.id);
+
+                std::vector<ObjectID> targetRequirements;
+                ErrorCode result = object.ExpandRequirements(targetRequirements);
+                CHECK_ERROR(result);
+
+                // If a requirement is not met in _Targets, add it in
+                for (const ObjectID& id : targetRequirements)
+                {
+                    if (!ContainsID(_Targets, id))
+                    {
+                        GetObject(requiredBuilding, id);
+                        bool arbitraryCount = static_cast<const Building&>(requiredBuilding).producer;
+                        _Targets.push_back({ id, arbitraryCount ? 0 : 1 });
+                    }
                 }
             }
 
@@ -147,11 +169,11 @@ namespace SGBuilds
                 // Update all leaves and check if they reach the build order target
                 for (NodePtr node : _LeafNodes)
                 {
-                    result = node->state.Update(_ObjectTargets);
+                    result = node->state.Update(_Targets);
                     CHECK_ERROR(result);
 
                     bool hasReachedTargets = false;
-                    result = node->state.HasReachedTargets(_ObjectTargets, hasReachedTargets);
+                    result = node->state.HasReachedTargets(_Targets, hasReachedTargets);
                     CHECK_ERROR(result);
 
                     if (hasReachedTargets)
@@ -175,7 +197,7 @@ namespace SGBuilds
                     }
                     else
                     {
-                        result = _SolverStrategy->Update(_ObjectTargets, node);
+                        result = _SolverStrategy->Update(_Targets, node);
                         CHECK_ERROR(result);
                     }
                 }
@@ -191,7 +213,7 @@ namespace SGBuilds
 
     private:
         ObjectID _Faction;
-        std::vector<Target> _ObjectTargets;
+        std::vector<Target> _Targets;
         SolverStrategyPtr _SolverStrategy;
 
         Graph _Graph;

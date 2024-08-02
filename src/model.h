@@ -1,22 +1,29 @@
 #pragma once
 
+#include "errorcodes.h"
+
+#include <vector>
+#include <algorithm>
+
 namespace SGBuilds
 {
     using ObjectID = unsigned;
 
     namespace ID
     {
+        constexpr unsigned FactionMask                   = 0xFF000000;
         constexpr ObjectID Vanguard                      = 0x01000000;
         constexpr ObjectID Infernal                      = 0x02000000;
         constexpr ObjectID Celestial                     = 0x04000000;
-        constexpr ObjectID FactionMask                   = 0xFF000000;
 
+        constexpr unsigned ObjectTypeMask                = 0x00FF0000;
         constexpr ObjectID Building                      = 0x00010000;
         constexpr ObjectID Unit                          = 0x00020000;
         constexpr ObjectID Upgrade                       = 0x00040000;
         constexpr ObjectID Spell                         = 0x00080000;
-        constexpr ObjectID ObjectTypeMask                = 0x00FF0000;
 
+        constexpr unsigned MaxObjectIDShift              = 16;
+        constexpr unsigned ObjectIDMask                  = 0x0000FFFF;
         constexpr ObjectID CommandPost                   = Vanguard | Building | 0x0001;
         constexpr ObjectID CentralCommand                = Vanguard | Building | 0x0002;
         constexpr ObjectID HighCommand                   = Vanguard | Building | 0x0004;
@@ -87,17 +94,44 @@ namespace SGBuilds
         virtual ~Object()
         {
         }
+
+        ErrorCode ExpandRequirements(std::vector<ObjectID>& requiredBuildings) const
+        {
+            if (requirements == 0)
+            {
+                return {};
+            }
+
+            if (requirements & ID::Upgrade || requirements & ID::Unit)
+            {
+                return InvalidRequirements;
+            }
+
+            for (int i = 0; i < ID::MaxObjectIDShift; ++i)
+            {
+                if (i & requirements)
+                {
+                    ObjectID id = requirements & ~(ID::ObjectIDMask);
+                    id |= (1 << i);
+                    requiredBuildings.push_back(id);
+                }
+            }
+
+            return Success;
+        }
     };
 
     struct Building : Object
     {
         const ObjectID upgradable;
         const int supply;
+        const bool producer;
 
-        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID upgradable = 0, int supply = 0)
+        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID upgradable = 0, int supply = 0, int producer = false)
             : Object(id, cost, requirements)
             , upgradable(upgradable)
             , supply(supply)
+            , producer(producer)
         {
         }
     };
@@ -132,4 +166,18 @@ namespace SGBuilds
         const ObjectID id;
         const int count;
     };
+
+    template <class T>
+    bool ContainsID(const T& container, ObjectID id)
+    {
+        auto itr = std::find_if(container.begin(), container.end(), [id](const Object& object) { return object.id == id; });
+        return itr != container.end();
+    }
+
+    template <>
+    bool ContainsID(const std::vector<Target>& container, ObjectID id)
+    {
+        auto itr = std::find_if(container.begin(), container.end(), [id](const Target& target) { return target.id == id; });
+        return itr != container.end();
+    }
 }

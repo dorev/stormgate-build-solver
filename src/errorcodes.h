@@ -12,6 +12,7 @@ namespace SGBuilds
     constexpr ErrorCode StateAlreadyHasATarget = -6;
     constexpr ErrorCode NoData = -7;
     constexpr ErrorCode NotEnoughResources = -8;
+    constexpr ErrorCode InvalidRequirements = -9;
     constexpr ErrorCode NotYetImplemented = -99;
 }
 
