@@ -24,6 +24,8 @@ namespace SGBuilds
     public:
         ErrorCode Update(const std::vector<Target>& targets, NodePtr& node) override
         {
+            ErrorCode result;
+
             if (!node->children.empty())
             {
                 return MustNotUpdateNodeWithChildren;
@@ -36,7 +38,7 @@ namespace SGBuilds
             for (const Target& target : targets)
             {
                 bool hasReachedTarget;
-                ErrorCode result = state.HasReachedTarget(target, hasReachedTarget);
+                result = state.HasReachedTarget(target, hasReachedTarget);
                 CHECK_ERROR(result);
 
                 if (!hasReachedTarget)
@@ -50,7 +52,7 @@ namespace SGBuilds
             for (const Target& target : remainingTargets)
             {
                 bool canProduce;
-                ErrorCode result = state.CanProduce(target.id, canProduce);
+                result = state.IsAllowedByTech(target.id, canProduce);
 
                 if (canProduce)
                 {
@@ -58,8 +60,32 @@ namespace SGBuilds
                 }
             }
 
+            // This above appears to be quite faction-agnostic
+
+            // From this point we should either follow these objectives or macro
+
+            // Create macro node if possible
+            bool canAfford;
+            result = state.CanAffordAndProduce(ID::Bob, canAfford);
+            CHECK_ERROR(result);
+
+            bool canProduce;
+            result = state.IsAllowedByTech(ID::Bob, canProduce);
+            CHECK_ERROR(result);
+
+
+
+            // How to avoid creating macro nodes at each update? We have to check if we already went down that path
+
+
+
+
+            // Is this node already pursuing a target?
+            // Can it afford this target?
+
+
             // Start a branch for each possible choice
-            
+
 
             // Consider the possibility of constructing multiple production buildings
             // Let's do something super naive first!

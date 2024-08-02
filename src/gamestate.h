@@ -108,45 +108,124 @@ namespace SGBuilds
             return _Time;
         }
 
-        ObjectID GetCurrentTarget() const
+        const std::vector<Building>& GetBuildings() const
+        {
+            return _Buildings;
+        }
+
+        const Target& GetCurrentTarget() const
         {
             return _CurrentTarget;
         }
 
-        ErrorCode SetCurrentTarget(ObjectID objectId)
+        ErrorCode SetCurrentTarget(const Target& target)
         {
-            if (_CurrentTarget != 0)
+            if (_CurrentTarget.id != 0)
             {
                 return StateAlreadyHasATarget;
             }
 
-            _CurrentTarget = objectId;
+            _CurrentTarget = target;
         }
 
-        ErrorCode CanProduce(ObjectID objectId, bool& canProduce) const
+        ErrorCode IsAllowedByTech(ObjectID objectId, bool& allowed) const
         {
             GetObject(object, objectId);
-            std::vector<ObjectID> requiredBuildings;
+            return IsAllowedByTech(object, allowed);
+        }
 
+        ErrorCode IsAllowedByTech(const Object& object, bool& allowed) const
+        {
+            std::vector<ObjectID> requiredBuildings;
             ErrorCode result = object.ExpandRequirements(requiredBuildings);
             CHECK_ERROR(result);
 
             for (const ObjectID id : requiredBuildings)
             {
-                if (ContainsID(requiredBuildings, id))
+                if (!ContainsID(_Buildings, id))
                 {
-                    canProduce = false;
+                    allowed = false;
                     return Success;
                 }
             }
 
-            canProduce = true;
+            allowed = true;
             return Success;
         }
 
-        ErrorCode Buy(ObjectID objectId)
+        ErrorCode CanAfford(ObjectID id, bool& canAfford)
+        {
+            GetObject(object, id);
+            return CanAfford(object, canAfford);
+        }
+
+        ErrorCode CanAfford(const Object& object, bool& canAfford)
+        {
+            canAfford = object.cost.luminite < _Luminite && object.cost.therium < _Therium;
+            return Success;
+        }
+
+        ErrorCode CanProduce(ObjectID objectId, bool& canProduce)
         {
             GetObject(object, objectId);
+
+            ErrorCode result = CanAfford(object, canProduce);
+            CHECK_ERROR(result);
+
+            if (!canProduce)
+            {
+                return Success;
+            }
+
+            result = IsAllowedByTech(object, canProduce);
+            CHECK_ERROR(result);
+
+            // Do we have more producer building than pending unit in production
+            if (objectId & ID::Unit)
+            {
+                ObjectID producerBuildingId = static_cast<const Unit&>(object).producer;
+                int producerBuildingCount = 0;
+                for (const Building& building : _Buildings)
+                {
+                    if (building.id == producerBuildingId)
+                    {
+                        producerBuildingCount++;
+                    }
+                }
+
+                // CATCH UP HERE
+            }
+
+            return Success;
+        }
+
+
+        ErrorCode CanAffordAndProduce(ObjectID objectId, bool& canAffordAndProduce)
+        {
+            GetObject(object, objectId);
+
+            canAffordAndProduce = object.cost.luminite < _Luminite && object.cost.therium < _Therium;
+
+            std::vector<ObjectID> requiredBuildings;
+            ErrorCode result = object.ExpandRequirements(requiredBuildings);
+            CHECK_ERROR(result);
+
+            for (const ObjectID id : requiredBuildings)
+            {
+                if (!ContainsID(_Buildings, id))
+                {
+                    canAffordAndProduce = false;
+                    return Success;
+                }
+            }
+
+            canAffordAndProduce = true;
+            return Success;
+        }
+
+        ErrorCode Buy(ObjectID id)
+        {
+            GetObject(object, id);
 
             if (object.cost.luminite >= _Luminite || object.cost.therium >= _Therium)
             {
@@ -181,6 +260,9 @@ namespace SGBuilds
 
         ErrorCode UpdatePendingObjects()
         {
+            // Tick time progress
+            // Clear reached targets
+            // TODO: consider production buff? (ex: SolarHabitat +25% buff)
             return NotYetImplemented;
         }
 
@@ -195,7 +277,7 @@ namespace SGBuilds
         int _WorkersOnLuminite;
         int _WorkersOnTherium;
         int _WorkersBuilding;
-        ObjectID _CurrentTarget;
+        Target _CurrentTarget;
         bool _HasReachedTargets;
     };
 }

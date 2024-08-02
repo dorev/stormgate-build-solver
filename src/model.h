@@ -142,6 +142,8 @@ namespace SGBuilds
         const ObjectID producer;
         const float luminitePerSecond;
         const float theriumPerSecond;
+        // CATCH UP HERE!
+        // have a state of business (upgrading itself, producing an upgrade or unit, available)
 
         Unit(ObjectID id, Cost cost, ObjectID requirements, int supply, ObjectID producer, float luminitePerSecond = 0.0f, float theriumPerSecond = 0.0f)
             : Object(id, cost, requirements)
@@ -155,8 +157,11 @@ namespace SGBuilds
 
     struct Upgrade : Object
     {
-        Upgrade(ObjectID id, Cost cost, ObjectID requirements)
+        const ObjectID producer;
+
+        Upgrade(ObjectID id, Cost cost, ObjectID requirements, ObjectID producer)
             : Object(id, cost, requirements)
+            , producer(producer)
         {
         }
     };
