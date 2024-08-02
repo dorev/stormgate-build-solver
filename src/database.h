@@ -32,7 +32,8 @@ namespace SGBuilds
             const auto itr = GetData().find(id);
             if (itr == GetData().end())
             {
-                return Object();
+                static const Object sentinel;
+                return sentinel;
             }
 
             return *static_cast<const T*>(itr->second.get());

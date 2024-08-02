@@ -163,8 +163,8 @@ namespace SGBuilds
 
     struct Target
     {
-        const ObjectID id;
-        const int count;
+        ObjectID id = 0;
+        int count = 1;
     };
 
     template <class T>

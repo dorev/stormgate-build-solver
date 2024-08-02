@@ -22,14 +22,14 @@ namespace SGBuilds
     class Solver
     {
     public:
-        ErrorCode Solve(ObjectID* objects, unsigned objectsSize)
+        ErrorCode Solve(Target* targets, unsigned targetsSize)
         {
-            std::vector<ObjectID> objectList = std::vector<ObjectID>(objects, objects + objectsSize);
+            std::vector<Target> targetList = std::vector<Target>(targets, targets + targetsSize);
 
-            ErrorCode result = ValidateObjectList(objectList);
+            ErrorCode result = ValidateTargetList(targetList);
             CHECK_ERROR(result);
 
-            result = PrepareTargets(objectList);
+            result = PrepareTargets(targetList);
             CHECK_ERROR(result);
 
             result = InitSolver();
@@ -55,25 +55,26 @@ namespace SGBuilds
         }
 
     private:
-        ErrorCode ValidateObjectList(std::vector<ObjectID> objectList)
+        ErrorCode ValidateTargetList(std::vector<Target> targetList)
         {
-            if (objectList.empty())
+            if (targetList.empty())
             {
-                return EmptyObjectList;
+                return EmptyTargetList;
             }
 
             // Validate faction
-            ObjectID faction = objectList[0] & ID::FactionMask;
+            ObjectID faction = targetList[0].id & ID::FactionMask;
             if (faction == 0)
             {
                 return InvalidFaction;
             }
+
             _Faction = faction;
 
             // Validate that all objects belong to the same faction
-            for (ObjectID id : objectList)
+            for (const Target& target : targetList)
             {
-                if ((id & ID::FactionMask) != faction)
+                if ((target.id & ID::FactionMask) != faction)
                 {
                     return MultipleFactionsInList;
                 }
@@ -82,31 +83,9 @@ namespace SGBuilds
             return Success;
         }
 
-        ErrorCode PrepareTargets(std::vector<ObjectID> objectList)
+        ErrorCode PrepareTargets(std::vector<Target>& targetList)
         {
-            for (ObjectID id : objectList)
-            {
-                // Find if a target already exists for that ID
-                int objectTargetIndex = -1;
-                for (int i = 0; i < _Targets.size(); ++i)
-                {
-                    if (_Targets[i].id == id)
-                    {
-                        objectTargetIndex = i;
-                        break;
-                    }
-                }
-
-                // Update or create the target
-                if (objectTargetIndex >= 0)
-                {
-                    (*const_cast<int*>(&_Targets[objectTargetIndex].count))++;
-                }
-                else
-                {
-                    _Targets.push_back({id, 1});
-                }
-            }
+            _Targets = targetList;
 
             // Add targets for missing required objects (ex. missing production buildings for target units)
             // Production building identified that way will have a count of 0, to indicate an arbitrary count
