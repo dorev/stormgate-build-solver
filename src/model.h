@@ -69,7 +69,6 @@ namespace SGBuilds
         constexpr ObjectID SkysprintRetrofit            = Vanguard | Upgrade | 0x0800;
         constexpr ObjectID SentinelAdeptAugmentation    = Vanguard | Upgrade | 0x1000;
         constexpr ObjectID CovertBombers                = Vanguard | Upgrade | 0x2000;
-
     }
 
     inline ObjectID DetectFaction(const ObjectID& id)
@@ -77,10 +76,9 @@ namespace SGBuilds
         return id & ID::FactionMask;
     }
 
-    using StatusID = int;
+    using StatusID = unsigned;
     namespace Status
     {
-        constexpr StatusID Invalid                      = -1;
         constexpr StatusID Idle                         = 0;
         constexpr StatusID CompletingUnit               = 1;
         constexpr StatusID CompletingUpgrade            = 2;
@@ -89,10 +87,9 @@ namespace SGBuilds
         constexpr StatusID CollectingTherium            = 5;
     }
 
-    using DecisionID = int;
+    using DecisionID = unsigned;
     namespace Decision
     {
-        constexpr DecisionID Waiting                    = -1;
         constexpr DecisionID IncreaseSupply             = 0;
         constexpr DecisionID Tech                       = 1;
         constexpr DecisionID Expand                     = 2;
@@ -207,7 +204,7 @@ namespace SGBuilds
         }
     };
 
-    struct Target
+    struct BuildTarget
     {
         ObjectID id = 0;
         int count = 1;
@@ -224,28 +221,28 @@ namespace SGBuilds
     }
 
     template <>
-    inline bool ContainsID(const std::vector<Target>& container, ObjectID id)
+    inline bool ContainsID(const std::vector<BuildTarget>& container, ObjectID id)
     {
-        auto itr = std::find_if(container.begin(), container.end(), [id](const Target& target) { return target.id == id; });
+        auto itr = std::find_if(container.begin(), container.end(), [id](const BuildTarget& target) { return target.id == id; });
         return itr != container.end();
     }
 
-    inline bool operator==(const Object& object, const Target& target)
+    inline bool operator==(const Object& object, const BuildTarget& target)
     {
         return object.id == target.id;
     }
     
-    inline bool operator==(const Target& target, const Object& object)
+    inline bool operator==(const BuildTarget& target, const Object& object)
     {
         return object == target;
     }
 
-    inline bool operator!=(const Object& object, const Target& target)
+    inline bool operator!=(const Object& object, const BuildTarget& target)
     {
         return !(object == target);
     }
     
-    inline bool operator!=(const Target& target, const Object& object)
+    inline bool operator!=(const BuildTarget& target, const Object& object)
     {
         return object != target;
     }

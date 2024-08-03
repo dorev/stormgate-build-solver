@@ -3,32 +3,30 @@
 
 namespace SGBuilds
 {
-    DecisionID GameState::GetDecision() const
+    GameState::GameState()
+        : _Faction(Faction::GetFactionForID(ID::Vanguard))
     {
-        return _Decision;
     }
-    
-    void GameState::SetDecision(const DecisionID& decision)
-    {
-        _Decision = decision;
-    }
+
 
     const ObjectID& GameState::GetTargetObject() const
     {
         return _TargetObject;
     }
-    
+
     void GameState::SetTargetObject(const ObjectID& targetObject)
     {
         _TargetObject = targetObject;
     }
 
-    ErrorCode GameState::Reset(const ObjectID& faction)
+    ErrorCode GameState::Reset(const Faction& faction)
     {
-        return NotYetImplemented;
+        *const_cast<Faction*>(&_Faction) = faction;
+        _Faction.ResetGameState(*this);
+        return Success;
     }
 
-    ErrorCode GameState::Update(const std::vector<Target>& targets)
+    ErrorCode GameState::Update()
     {
         if (!_BuildCompleted)
         {
@@ -42,7 +40,7 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::HasReachedTarget(const Target& target, bool& hasReachedTarget)
+    ErrorCode GameState::HasReachedTarget(const BuildTarget& target, bool& hasReachedTarget)
     {
         int targetCount = 0;
         ObjectID objectType = target.id & ID::ObjectTypeMask;
@@ -89,26 +87,58 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::HasCompletedBuild(const std::vector<Target>& targets, bool& hasReachedTargets)
+    ErrorCode GameState::HasCompletedBuild(const std::vector<BuildTarget>& buildTargets, bool& hasReachedTargets)
     {
-        if (_BuildCompleted)
+        if (!_BuildCompleted)
         {
-            hasReachedTargets = true;
-            return Success;
-        }
-
-        for (const Target& target : targets)
-        {
-            ErrorCode result = HasReachedTarget(target, hasReachedTargets);
-            CHECK_ERROR(result);
-
-            if (!hasReachedTargets)
+            for (const BuildTarget& target : buildTargets)
             {
-                return Success;
+                ErrorCode result = HasReachedTarget(target, hasReachedTargets);
+                CHECK_ERROR(result);
+
+                if (!hasReachedTargets)
+                {
+                    return Success;
+                }
             }
         }
 
         _BuildCompleted = true;
+
+        return Success;
+    }
+
+    ErrorCode GameState::ListNextAccessibleTargets(const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& accessibleTargets)
+    {
+        ErrorCode result;
+
+        // List targets yet to be completed
+        std::vector<ObjectID> remainingTargets;
+        for (const BuildTarget& target : buildTargets)
+        {
+            bool hasReachedTarget;
+            result = HasReachedTarget(target, hasReachedTarget);
+            CHECK_ERROR(result);
+
+            if (!hasReachedTarget)
+            {
+                remainingTargets.push_back(target);
+            }
+        }
+
+        // Filter out inaccessible objects (because of lacking prereqs)
+        for (const ObjectID& targetObject : remainingTargets)
+        {
+            bool techAllows;
+            result = TechAllows(targetObject, techAllows);
+            CHECK_ERROR(result);
+
+            if (techAllows)
+            {
+                accessibleTargets.push_back(targetObject);
+            }
+        }
+
         return Success;
     }
 
@@ -122,7 +152,7 @@ namespace SGBuilds
         return _Buildings;
     }
 
-    ErrorCode GameState::IsAllowedByTech(ObjectID objectId, bool& allowed) const
+    ErrorCode GameState::TechAllows(ObjectID objectId, bool& allowed) const
     {
         GET_OBJECT(object, objectId);
         return IsAllowedByTech(object, allowed);
@@ -144,6 +174,7 @@ namespace SGBuilds
         }
 
         allowed = true;
+
         return Success;
     }
 
@@ -159,23 +190,25 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::CanProduce(ObjectID objectId, bool& canProduce)
+    ErrorCode GameState::CanProduce(ObjectID objectId, bool& techAllows, bool& canProduce)
     {
         GET_OBJECT(object, objectId);
+        return CanProduce(object, techAllows, canProduce);
+    }
 
-        ErrorCode result = CanAfford(object, canProduce);
+    ErrorCode GameState::CanProduce(const Object& object, bool& techAllows, bool& canProduce)
+    {
+        ErrorCode result = IsAllowedByTech(object, techAllows);
         CHECK_ERROR(result);
 
-        if (!canProduce)
+        if (!techAllows)
         {
+            canProduce = false;
             return Success;
         }
 
-        result = IsAllowedByTech(object, canProduce);
-        CHECK_ERROR(result);
-
         // Find if we have a producer building available
-        if (objectId & ID::Unit)
+        if (object & ID::Unit)
         {
             ObjectID producerBuildingId = static_cast<const Unit&>(object).producer;
             int producerBuildingCount = 0;
@@ -192,26 +225,16 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::CanAffordAndProduce(ObjectID objectId, bool& canAfford, bool& canProduce)
+    ErrorCode GameState::CheckProductionCapability(ObjectID objectId, bool& techAllows, bool& canAfford, bool& canProduce)
     {
         GET_OBJECT(object, objectId);
 
-        canAfford = object.cost.luminite < _Luminite && object.cost.therium < _Therium;
-
-        std::vector<ObjectID> requiredBuildings;
-        ErrorCode result = object.ExpandRequirements(requiredBuildings);
+        ErrorCode result = CanAfford(object, canAfford);
         CHECK_ERROR(result);
 
-        for (const ObjectID id : requiredBuildings)
-        {
-            if (!ContainsID(_Buildings, id))
-            {
-                canProduce = false;
-                return Success;
-            }
-        }
+        result = CanProduce(object, techAllows, canProduce);
+        CHECK_ERROR(result);
 
-        canProduce = true;
         return Success;
     }
 
@@ -232,18 +255,14 @@ namespace SGBuilds
         return Success;
     }
 
-    int GameState::GetCurrentSupplyCap() const
+    int GameState::GetCurrentPopulationCap() const
     {
-        return -1;
-    }
-
-    int GameState::WillExceedSupplyCap(ObjectID unit) const
-    {
-        return -1;
+        // CATCH UP HERE!
     }
 
     int GameState::LuminiteIsSaturated() const
     {
+        // NotYetImplemented
         return -1;
     }
 

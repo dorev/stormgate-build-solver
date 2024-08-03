@@ -16,10 +16,11 @@ namespace SGBuilds
         struct Node
         {
             GameState state;
+            Graph& graph;
             NodePtr parent;
             std::unordered_set<NodePtr> children;
 
-            Node(const GameState& state);
+            Node(const GameState& state, Graph& graph);
         };
 
         Graph();

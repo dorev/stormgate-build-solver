@@ -3,9 +3,9 @@
 
 namespace SGBuilds
 {
-    ErrorCode Solver::Solve(Target* targets, unsigned targetsSize)
+    ErrorCode Solver::Solve(BuildTarget* targets, unsigned targetsSize)
     {
-        std::vector<Target> targetList = std::vector<Target>(targets, targets + targetsSize);
+        std::vector<BuildTarget> targetList = std::vector<BuildTarget>(targets, targets + targetsSize);
 
         ErrorCode result = ValidateTargetList(targetList);
         CHECK_ERROR(result);
@@ -35,7 +35,7 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
-    ErrorCode Solver::ValidateTargetList(std::vector<Target> targetList)
+    ErrorCode Solver::ValidateTargetList(std::vector<BuildTarget> targetList)
     {
         if (targetList.empty())
         {
@@ -49,10 +49,10 @@ namespace SGBuilds
             return InvalidFaction;
         }
 
-        _Faction = faction;
+        *(const_cast<Faction*>(&_Faction)) = Faction::GetFactionForID(faction);
 
         // Validate that all objects belong to the same faction
-        for (const Target& target : targetList)
+        for (const BuildTarget& target : targetList)
         {
             if ((target.id & ID::FactionMask) != faction)
             {
@@ -63,13 +63,13 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode Solver::PrepareTargets(std::vector<Target>& targetList)
+    ErrorCode Solver::PrepareTargets(std::vector<BuildTarget>& targetList)
     {
         _Targets = targetList;
 
         // Add targets for missing required objects (ex. missing production buildings for target units)
         // Production building identified that way will have a count of 0, to indicate an arbitrary count
-        for (const Target& target : _Targets)
+        for (const BuildTarget& target : _Targets)
         {
             GET_OBJECT(object, target.id);
 
@@ -99,17 +99,6 @@ namespace SGBuilds
         rootState.Reset(_Faction);
         _Graph.AddNode(rootState);
 
-        // Select solver strategy based on faction
-        switch (_Faction)
-        {
-        case ID::Vanguard:
-            _SolverStrategy = std::make_shared<VanguardStrategy>();
-            break;
-
-        default:
-            return NotYetImplemented;
-        }
-
         return Success;
     }
 
@@ -128,10 +117,10 @@ namespace SGBuilds
             // Update all leaves and check if they reach the build order target
             for (NodePtr node : _LeafNodes)
             {
-                result = node->state.Update(_Targets);
+                result = node->state.Update();
                 CHECK_ERROR(result);
 
-                result = _SolverStrategy->Update(_Targets, node);
+                result = _Faction.GetSolverStrategy().Update(_Targets, node);
                 CHECK_ERROR(result);
 
                 bool buildCompleted = false;

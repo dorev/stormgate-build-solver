@@ -2,8 +2,9 @@
 
 namespace SGBuilds
 {
-    Graph::Node::Node(const GameState& state)
+    Graph::Node::Node(const GameState& state, Graph& graph)
         : state(state)
+        , graph(graph)
     {
     }
 
@@ -14,7 +15,7 @@ namespace SGBuilds
 
     NodePtr Graph::AddNode(const GameState& state)
     {
-        NodePtr node = std::make_shared<Node>(state);
+        NodePtr node = std::make_shared<Node>(state, *this);
         _Nodes.insert(node);
 
         if (_Root == nullptr)

@@ -12,7 +12,7 @@ TEST(Database, Instanciate)
 
 TEST(BuildOrder, QuickdrawExos10MedTechs2)
 {
-    Target targets[] = 
+    BuildTarget targets[] = 
     {
         { ID::Exo, 10 },
         { ID::MedTech, 2 },

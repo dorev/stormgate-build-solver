@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model.h"
+#include "faction.h"
 
 namespace SGBuilds
 {
@@ -12,25 +13,25 @@ namespace SGBuilds
         static constexpr float TimeIncrementPerUpdate = 1.0f;
 
     public:
-        DecisionID GetDecision() const;
-        void SetDecision(const DecisionID& intention);
+        GameState();
         const ObjectID& GetTargetObject() const;
         void SetTargetObject(const ObjectID& targetObject);
-        ErrorCode Reset(const ObjectID& faction);
-        ErrorCode Update(const std::vector<Target>& targets);
-        ErrorCode HasReachedTarget(const Target& target, bool& hasReachedTarget);
-        ErrorCode HasCompletedBuild(const std::vector<Target>& targets, bool& buildCompleted);
+        ErrorCode Reset(const Faction& faction);
+        ErrorCode Update();
+        ErrorCode HasReachedTarget(const BuildTarget& target, bool& hasReachedTarget);
+        ErrorCode HasCompletedBuild(const std::vector<BuildTarget>& buildTargets, bool& buildCompleted);
+        ErrorCode ListNextAccessibleTargets(const std::vector<BuildTarget>& targets, std::vector<ObjectID>& accessibleTargets);
         int GetTime();
         const std::vector<Building>& GetBuildings() const;
-        ErrorCode IsAllowedByTech(ObjectID objectId, bool& allowed) const;
+        ErrorCode TechAllows(ObjectID objectId, bool& allowed) const;
         ErrorCode IsAllowedByTech(const Object& object, bool& allowed) const;
         ErrorCode CanAfford(ObjectID id, bool& canAfford);
         ErrorCode CanAfford(const Object& object, bool& canAfford);
-        ErrorCode CanProduce(ObjectID objectId, bool& canProduce);
-        ErrorCode CanAffordAndProduce(ObjectID objectId, bool& canAfford, bool& canProduce);
+        ErrorCode CanProduce(ObjectID objectId, bool& techAllows, bool& canProduce);
+        ErrorCode CanProduce(const Object& object, bool& techAllows, bool& canProduce);
+        ErrorCode CheckProductionCapability(ObjectID objectId, bool& techAllows, bool& canAfford, bool& canProduce);
         ErrorCode Buy(ObjectID id);
-        int GetCurrentSupplyCap() const;
-        int WillExceedSupplyCap(ObjectID unit) const;
+        int GetCurrentPopulationCap() const;
         int LuminiteIsSaturated() const;
 
     private:
@@ -38,8 +39,8 @@ namespace SGBuilds
         ErrorCode UpdatePendingObjects();
 
     private:
-        DecisionID _Decision;
         ObjectID _TargetObject;
+        const Faction& _Faction;
         int _Time;
         float _Luminite;
         float _Therium;
@@ -47,9 +48,6 @@ namespace SGBuilds
         std::vector<Building> _Buildings;
         std::vector<Upgrade> _Upgrades;
         std::vector<Object> _PendingObjects;
-        int _WorkersOnLuminite;
-        int _WorkersOnTherium;
-        int _WorkersBuilding;
         bool _BuildCompleted;
     };
 }
