@@ -32,9 +32,8 @@ namespace SGBuilds
         ErrorCode PrepareBuildOrder();
 
     private:
-        const Faction& _Faction;
+        ObjectID _Faction;
         std::vector<BuildTarget> _Targets;
-        SolverStrategyPtr _SolverStrategy;
 
         Graph _Graph;
         std::vector<NodePtr> _LeafNodes;

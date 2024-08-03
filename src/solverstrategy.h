@@ -40,9 +40,33 @@ namespace SGBuilds
         }
     };
 
-    using SolverStrategyPtr = std::shared_ptr<SolverStrategy>;
-
     class VanguardStrategy : public SolverStrategy
+    {
+    public:
+        ErrorCode Update(const std::vector<BuildTarget>& targets, NodePtr& node) const override;
+        ErrorCode GetTargetsToIncreaseSupply(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToTech(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToExpand(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToProduceUnit(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToProduceProducer(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToProduceWorker(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToProduceUpgrade(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+    };
+
+    class InfernalStrategy : public SolverStrategy
+    {
+    public:
+        ErrorCode Update(const std::vector<BuildTarget>& targets, NodePtr& node) const override;
+        ErrorCode GetTargetsToIncreaseSupply(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToTech(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToExpand(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToProduceUnit(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToProduceProducer(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToProduceWorker(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+        ErrorCode GetTargetsToProduceUpgrade(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const override;
+    };
+
+    class CelestialStrategy : public SolverStrategy
     {
     public:
         ErrorCode Update(const std::vector<BuildTarget>& targets, NodePtr& node) const override;

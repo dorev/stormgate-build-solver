@@ -2,7 +2,11 @@
 
 namespace SGBuilds
 {
-    const Faction& Faction::GetFactionForID(const ObjectID& id)
+    Faction::~Faction()
+    {
+    }
+
+    const Faction& Faction::Get(const ObjectID& id)
     {
         static const Vanguard vanguardFaction;
         static const Infernal infernalFaction;
@@ -21,7 +25,11 @@ namespace SGBuilds
 
         case ID::Celestial:
             return celestialFaction;
-
         }
+    }
+
+    const SolverStrategy& Faction::Strategy(const ObjectID& id)
+    {
+        return Faction::Get(id).GetSolverStrategy();
     }
 }

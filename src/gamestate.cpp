@@ -4,7 +4,7 @@
 namespace SGBuilds
 {
     GameState::GameState()
-        : _Faction(Faction::GetFactionForID(ID::Vanguard))
+        : _Faction(Faction::Get(ID::Vanguard))
     {
     }
 
@@ -82,7 +82,14 @@ namespace SGBuilds
             return InvalidObjectType;
         }
 
-        hasReachedTarget = targetCount < target.count;
+        if (target.count == 0)
+        {
+            hasReachedTarget = targetCount > 0;
+        }
+        else
+        {
+            hasReachedTarget = targetCount >= target.count;
+        }
 
         return Success;
     }
@@ -150,6 +157,11 @@ namespace SGBuilds
     const std::vector<Building>& GameState::GetBuildings() const
     {
         return _Buildings;
+    }
+
+    const std::vector<Unit>& GameState::GetUnits() const
+    {
+        return _Units;
     }
 
     ErrorCode GameState::TechAllows(ObjectID objectId, bool& allowed) const
@@ -257,13 +269,12 @@ namespace SGBuilds
 
     int GameState::GetCurrentPopulationCap() const
     {
-        // CATCH UP HERE!
+        return _Faction.GetPopulationCap(*this);
     }
 
     int GameState::LuminiteIsSaturated() const
     {
-        // NotYetImplemented
-        return -1;
+        return _Faction.LuminiteSaturated(*this);
     }
 
     ErrorCode GameState::UpdateResources()

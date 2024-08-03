@@ -10,10 +10,12 @@ namespace SGBuilds
     class Faction
     {
     public:
-        static const Faction& GetFactionForID(const ObjectID& id);
+        static const Faction& Get(const ObjectID& id);
+        static const SolverStrategy& Strategy(const ObjectID& id);
+
         virtual ~Faction();
 
-        virtual void ResetGameState(GameState& state) const = 0;
+        virtual ErrorCode ResetGameState(GameState& state) const = 0;
         virtual const SolverStrategy& GetSolverStrategy() const = 0;
         virtual int GetPopulationCap(const GameState& state) const = 0;
         virtual int LuminiteSaturated(const GameState& state) const = 0;
@@ -22,7 +24,7 @@ namespace SGBuilds
     class Vanguard : public Faction
     {
     public:
-        void ResetGameState(GameState& state) const override;
+        ErrorCode ResetGameState(GameState& state) const override;
         const SolverStrategy& GetSolverStrategy() const override;
         int GetPopulationCap(const GameState& state) const override;
         int LuminiteSaturated(const GameState& state) const override;
@@ -31,7 +33,7 @@ namespace SGBuilds
     class Infernal : public Faction
     {
     public:
-        void ResetGameState(GameState& state) const override;
+        ErrorCode ResetGameState(GameState& state) const override;
         const SolverStrategy& GetSolverStrategy() const override;
         int GetPopulationCap(const GameState& state) const override;
         int LuminiteSaturated(const GameState& state) const override;
@@ -40,7 +42,7 @@ namespace SGBuilds
     class Celestial : public Faction
     {
     public:
-        void ResetGameState(GameState& state) const override;
+        ErrorCode ResetGameState(GameState& state) const override;
         const SolverStrategy& GetSolverStrategy() const override;
         int GetPopulationCap(const GameState& state) const override;
         int LuminiteSaturated(const GameState& state) const override;

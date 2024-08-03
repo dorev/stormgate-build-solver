@@ -1,5 +1,6 @@
 #include "solver.h"
 #include "database.h"
+#include "faction.h"
 
 namespace SGBuilds
 {
@@ -43,18 +44,18 @@ namespace SGBuilds
         }
 
         // Validate faction
-        ObjectID faction = targetList[0].id & ID::FactionMask;
-        if (faction == 0)
+        ObjectID factionId = targetList[0].id & ID::FactionMask;
+        if (factionId != ID::Vanguard && factionId != ID::Infernal && factionId != ID::Celestial)
         {
             return InvalidFaction;
         }
 
-        *(const_cast<Faction*>(&_Faction)) = Faction::GetFactionForID(faction);
+        _Faction = factionId;
 
         // Validate that all objects belong to the same faction
         for (const BuildTarget& target : targetList)
         {
-            if ((target.id & ID::FactionMask) != faction)
+            if ((target.id & ID::FactionMask) != factionId)
             {
                 return MultipleFactionsInList;
             }
@@ -96,7 +97,7 @@ namespace SGBuilds
     {
         // Init graph
         GameState rootState;
-        rootState.Reset(_Faction);
+        rootState.Reset(Faction::Get(_Faction));
         _Graph.AddNode(rootState);
 
         return Success;
@@ -120,7 +121,7 @@ namespace SGBuilds
                 result = node->state.Update();
                 CHECK_ERROR(result);
 
-                result = _Faction.GetSolverStrategy().Update(_Targets, node);
+                result = Faction::Strategy(_Faction).Update(_Targets, node);
                 CHECK_ERROR(result);
 
                 bool buildCompleted = false;

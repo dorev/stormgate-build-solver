@@ -4,43 +4,23 @@
 
 namespace SGBuilds
 {
-    ErrorCode Vanguard::ResetGameState(GameState& state) const
+    ErrorCode Infernal::ResetGameState(GameState& state) const
     {
         state._Buildings.clear();
         state._Units.clear();
         state._Upgrades.clear();
         state._PendingObjects.clear();
 
-        GET_OBJECT(commandPost, ID::CommandPost);
-        state._Buildings.push_back(static_cast<const Building&>(commandPost));
-
-        GET_OBJECT(protoBob, ID::Bob);
-        Unit bob = static_cast<const Unit&>(protoBob);
-        bob.status = Status::CollectingLuminite;
-        for (int i = 0; i < 10; ++i)
-        {
-            state._Units.push_back(static_cast<const Unit&>(bob));
-        }
-
-        GET_OBJECT(scout, ID::Scout);
-        state._Units.push_back(static_cast<const Unit&>(scout));
-
-        state._Luminite = 100;
-        state._Therium = 0;
-        state._Time = 0;
-        state._TargetObject = BuildTarget();
-        state._BuildCompleted = false;
-
-        return Success;
+        return NotYetImplemented;
     }
 
-    const SolverStrategy& Vanguard::GetSolverStrategy() const
+    const SolverStrategy& Infernal::GetSolverStrategy() const
     {
-        static const VanguardStrategy strategy;
+        static const InfernalStrategy strategy;
         return strategy;
     }
 
-    int Vanguard::GetPopulationCap(const GameState& state) const
+    int Infernal::GetPopulationCap(const GameState& state) const
     {
         int supply = 0;
         for (const Building& building : state.GetBuildings())
@@ -50,7 +30,7 @@ namespace SGBuilds
         return supply;
     }
 
-    int Vanguard::LuminiteSaturated(const GameState& state) const
+    int Infernal::LuminiteSaturated(const GameState& state) const
     {
         int baseCount = 0;
         for (const Building& building : state.GetBuildings())
