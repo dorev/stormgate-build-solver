@@ -21,5 +21,7 @@ namespace SGBuilds
     {
     public:
         ErrorCode Update(const std::vector<Target>& targets, NodePtr& node) override;
+
+        ErrorCode GetTargetsForDecision(const DecisionID& decision, GameState& state, std::vector<ObjectID>& targetObjects);
     };
 }

@@ -20,7 +20,7 @@ TEST(BuildOrder, QuickdrawExos10MedTechs2)
     };
 
     Solver solver;
-    ErrorCode result = solver.Solve(targets, sizeof(targets) / sizeof(Target));
+    ErrorCode result = solver.Solve(targets, sizeof(targets) / sizeof(ObjectID));
     EXPECT_EQ(result, Success);
 }
 

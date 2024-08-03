@@ -77,10 +77,10 @@ namespace SGBuilds
         return id & ID::FactionMask;
     }
 
-    using StatusID = unsigned;
-
+    using StatusID = int;
     namespace Status
     {
+        constexpr StatusID Invalid                      = -1;
         constexpr StatusID Idle                         = 0;
         constexpr StatusID CompletingUnit               = 1;
         constexpr StatusID CompletingUpgrade            = 2;
@@ -89,14 +89,18 @@ namespace SGBuilds
         constexpr StatusID CollectingTherium            = 5;
     }
 
-    using DecisionID = unsigned;
-
+    using DecisionID = int;
     namespace Decision
     {
-        constexpr DecisionID Macro                      = 0;
+        constexpr DecisionID Waiting                    = -1;
+        constexpr DecisionID IncreaseSupply             = 0;
         constexpr DecisionID Tech                       = 1;
-        constexpr DecisionID Produce                    = 2;
-        constexpr DecisionID IncreaseSupply             = 3;
+        constexpr DecisionID Expand                     = 2;
+        constexpr DecisionID ProduceUnit                = 3;
+        constexpr DecisionID ProduceProducer            = 4;
+        constexpr DecisionID ProduceWorker              = 5;
+        constexpr DecisionID ProduceUpgrade             = 6;
+        constexpr DecisionID MaxDecision                = 7;
     }
 
     struct Cost
@@ -209,6 +213,7 @@ namespace SGBuilds
         int count = 1;
 
         operator ObjectID() const { return id; }
+        bool IsValid() const { return id > 0; }
     };
 
     template <class T>

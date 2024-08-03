@@ -4,7 +4,7 @@
 
 namespace SGBuilds
 {
-    using Intention = DecisionID;
+    using DecisionID = DecisionID;
 
     class GameState
     {
@@ -12,12 +12,14 @@ namespace SGBuilds
         static constexpr float TimeIncrementPerUpdate = 1.0f;
 
     public:
-        Intention GetIntention() const;
-        void SetIntention(const Intention& intention);
+        DecisionID GetDecision() const;
+        void SetDecision(const DecisionID& intention);
+        const ObjectID& GetTargetObject() const;
+        void SetTargetObject(const ObjectID& targetObject);
         ErrorCode Reset(const ObjectID& faction);
         ErrorCode Update(const std::vector<Target>& targets);
         ErrorCode HasReachedTarget(const Target& target, bool& hasReachedTarget);
-        ErrorCode HasReachedTargets(const std::vector<Target>& targets, bool& hasReachedTargets);
+        ErrorCode HasCompletedBuild(const std::vector<Target>& targets, bool& buildCompleted);
         int GetTime();
         const std::vector<Building>& GetBuildings() const;
         ErrorCode IsAllowedByTech(ObjectID objectId, bool& allowed) const;
@@ -25,7 +27,7 @@ namespace SGBuilds
         ErrorCode CanAfford(ObjectID id, bool& canAfford);
         ErrorCode CanAfford(const Object& object, bool& canAfford);
         ErrorCode CanProduce(ObjectID objectId, bool& canProduce);
-        ErrorCode CanAffordAndProduce(ObjectID objectId, bool& canAffordAndProduce);
+        ErrorCode CanAffordAndProduce(ObjectID objectId, bool& canAfford, bool& canProduce);
         ErrorCode Buy(ObjectID id);
         int GetCurrentSupplyCap() const;
         int WillExceedSupplyCap(ObjectID unit) const;
@@ -36,7 +38,8 @@ namespace SGBuilds
         ErrorCode UpdatePendingObjects();
 
     private:
-        Intention _Intention;
+        DecisionID _Decision;
+        ObjectID _TargetObject;
         int _Time;
         float _Luminite;
         float _Therium;
@@ -47,6 +50,6 @@ namespace SGBuilds
         int _WorkersOnLuminite;
         int _WorkersOnTherium;
         int _WorkersBuilding;
-        bool _HasReachedTargets;
+        bool _BuildCompleted;
     };
 }

@@ -3,14 +3,24 @@
 
 namespace SGBuilds
 {
-    Intention GameState::GetIntention() const
+    DecisionID GameState::GetDecision() const
     {
-        return _Intention;
+        return _Decision;
     }
     
-    void GameState::SetIntention(const Intention& intention)
+    void GameState::SetDecision(const DecisionID& decision)
     {
-        _Intention = intention;
+        _Decision = decision;
+    }
+
+    const ObjectID& GameState::GetTargetObject() const
+    {
+        return _TargetObject;
+    }
+    
+    void GameState::SetTargetObject(const ObjectID& targetObject)
+    {
+        _TargetObject = targetObject;
     }
 
     ErrorCode GameState::Reset(const ObjectID& faction)
@@ -20,7 +30,7 @@ namespace SGBuilds
 
     ErrorCode GameState::Update(const std::vector<Target>& targets)
     {
-        if (!_HasReachedTargets)
+        if (!_BuildCompleted)
         {
             ErrorCode result = UpdateResources();
             CHECK_ERROR(result);
@@ -79,9 +89,9 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::HasReachedTargets(const std::vector<Target>& targets, bool& hasReachedTargets)
+    ErrorCode GameState::HasCompletedBuild(const std::vector<Target>& targets, bool& hasReachedTargets)
     {
-        if (_HasReachedTargets)
+        if (_BuildCompleted)
         {
             hasReachedTargets = true;
             return Success;
@@ -98,7 +108,7 @@ namespace SGBuilds
             }
         }
 
-        _HasReachedTargets = true;
+        _BuildCompleted = true;
         return Success;
     }
 
@@ -182,11 +192,11 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::CanAffordAndProduce(ObjectID objectId, bool& canAffordAndProduce)
+    ErrorCode GameState::CanAffordAndProduce(ObjectID objectId, bool& canAfford, bool& canProduce)
     {
         GET_OBJECT(object, objectId);
 
-        canAffordAndProduce = object.cost.luminite < _Luminite && object.cost.therium < _Therium;
+        canAfford = object.cost.luminite < _Luminite && object.cost.therium < _Therium;
 
         std::vector<ObjectID> requiredBuildings;
         ErrorCode result = object.ExpandRequirements(requiredBuildings);
@@ -196,12 +206,12 @@ namespace SGBuilds
         {
             if (!ContainsID(_Buildings, id))
             {
-                canAffordAndProduce = false;
+                canProduce = false;
                 return Success;
             }
         }
 
-        canAffordAndProduce = true;
+        canProduce = true;
         return Success;
     }
 

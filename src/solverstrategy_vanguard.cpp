@@ -13,8 +13,51 @@ namespace SGBuilds
 
         GameState& state = node->state;
 
-        // CATCH UP HERE!!
         // Progress on current target
+        const ObjectID& target = state.GetTargetObject();
+        bool nodeTargetReached = false;
+
+        if (target)
+        {
+            bool canAfford, canProduce;
+            result = state.CanAffordAndProduce(target, canAfford, canProduce);
+            CHECK_ERROR(result);
+
+            if (!canProduce)
+            {
+                return InvalidDecision;
+            }
+
+            if (canAfford)
+            {
+                result = state.Buy(target);
+                nodeTargetReached = true;
+                CHECK_ERROR(result);
+            }
+        }
+
+        // When target is reached, prepare next generation of nodes
+        if (nodeTargetReached)
+        {
+            std::vector<ObjectID> nextGenerationTargets;
+
+            // For all possible decisions, validate all possible targets considering tech
+            for (int decision = 0; decision < Decision::MaxDecision; ++decision)
+            {
+                GetTargetsForDecision(decision, state, nextGenerationTargets);
+                // CATCH UP HERE!!
+            }
+
+        }
+
+
+
+
+        // Check if current intention is done
+        // If it is
+
+
+
         // Validate the intention of the current node
         // See if we can take a macro, tech, or producing decision and branch form the tree if possible
         // Don't forget to consider the idea of increasing supply! ... or should increasing supply be part of macroing?
@@ -53,15 +96,9 @@ namespace SGBuilds
 
 
         // Create macro node if possible
-        bool canAfford;
-        result = state.CanAffordAndProduce(ID::Bob, canAfford);
+        bool canAfford, canProduce;
+        result = state.CanAffordAndProduce(ID::Bob, canAfford, canProduce);
         CHECK_ERROR(result);
-
-        bool canProduce;
-        result = state.IsAllowedByTech(ID::Bob, canProduce);
-        CHECK_ERROR(result);
-
-
 
         // How to avoid creating macro nodes at each update? We have to check if we already went down that path
 
@@ -81,4 +118,9 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
+
+    ErrorCode VanguardStrategy::GetTargetsForDecision(const DecisionID& decision, GameState& state, std::vector<ObjectID>& targetObjects)
+    {
+        return NotYetImplemented;
+    }
 }

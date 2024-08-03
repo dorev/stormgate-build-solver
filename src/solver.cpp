@@ -131,11 +131,14 @@ namespace SGBuilds
                 result = node->state.Update(_Targets);
                 CHECK_ERROR(result);
 
-                bool hasReachedTargets = false;
-                result = node->state.HasReachedTargets(_Targets, hasReachedTargets);
+                result = _SolverStrategy->Update(_Targets, node);
                 CHECK_ERROR(result);
 
-                if (hasReachedTargets)
+                bool buildCompleted = false;
+                result = node->state.HasCompletedBuild(_Targets, buildCompleted);
+                CHECK_ERROR(result);
+
+                if (buildCompleted)
                 {
                     // Compare with the current solution
                     // The best branch should reach the build order target in the smallest time possible.
@@ -154,11 +157,6 @@ namespace SGBuilds
                         _Graph.RemoveNode(node);
                     }
                 }
-                else
-                {
-                    result = _SolverStrategy->Update(_Targets, node);
-                    CHECK_ERROR(result);
-                }
             }
         }
 
@@ -167,6 +165,7 @@ namespace SGBuilds
 
     ErrorCode Solver::PrepareBuildOrder()
     {
+        // Aggregate and synthesize best solution into a readable build order
         return NotYetImplemented;
     }
 }
