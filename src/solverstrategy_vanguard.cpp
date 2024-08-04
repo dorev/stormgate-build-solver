@@ -2,6 +2,8 @@
 
 namespace SGBuilds
 {
+    // NOTE: We'll see later, but this Update method looks quite faction agnostic!
+
     ErrorCode VanguardStrategy::Update(const std::vector<BuildTarget>& buildTargets, NodePtr& node) const
     {
         ErrorCode result;
@@ -44,6 +46,7 @@ namespace SGBuilds
             std::vector<ObjectID> nextNodeTargets;
             for (int decision = 0; decision < Decision::MaxDecision; ++decision)
             {
+                // NOTE: This is likely the only call that has faction-specific logic
                 GetTargetsForDecision(decision, state, buildTargets, nextNodeTargets);
             }
 
@@ -96,6 +99,9 @@ namespace SGBuilds
 
     ErrorCode VanguardStrategy::GetTargetsToProduceWorker(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
     {
+        // A worker for luminite
+        // A worker for therium
+        // Set their status appropriately in the pending object
         return NotYetImplemented;
     }
 

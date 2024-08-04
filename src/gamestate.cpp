@@ -30,6 +30,8 @@ namespace SGBuilds
     {
         if (!_BuildCompleted)
         {
+            _Time += TimeIncrementPerUpdate;
+
             ErrorCode result = UpdateResources();
             CHECK_ERROR(result);
 
@@ -279,15 +281,41 @@ namespace SGBuilds
 
     ErrorCode GameState::UpdateResources()
     {
-        return NotYetImplemented;
+        for (const Unit& unit : _Units)
+        {
+            switch (unit.status)
+            {
+            case Status::CollectingLuminite:
+                _Luminite += unit.luminitePerSecond;
+                break;
+            case Status::CollectingTherium:
+                _Therium += unit.theriumPerSecond;
+                break;
+            default:
+                break;
+            }
+        }
+
+        return Success;
     }
 
     ErrorCode GameState::UpdatePendingObjects()
     {
+        for (auto itr = _PendingObjects.rbegin(); itr != _PendingObjects.rend(); ++itr)
+        {
+            Object& object = *itr;
+            object.completion += TimeIncrementPerUpdate / object.cost.time;
+
+            if (object.completion >= 1.0f)
+            {
+                // Add to the relevant GameState vector
+                
+            }
+        }
+
         // Tick time progress
-        // Clear reached targets
+        // Clear reached targets (oui! c'est ici que ca se passe!)
         // TODO: consider production buff? (ex: SolarHabitat +25% buff)
-        // Check if a target the target is completed
         return NotYetImplemented;
     }
 }
