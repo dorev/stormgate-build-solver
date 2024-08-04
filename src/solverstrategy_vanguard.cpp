@@ -30,7 +30,7 @@ namespace SGBuilds
                 return InvalidDecision;
             }
 
-            if (canAfford)
+            if (canAfford && canProduce)
             {
                 result = state.Buy(target);
                 CHECK_ERROR(result);
@@ -107,6 +107,22 @@ namespace SGBuilds
 
     ErrorCode VanguardStrategy::GetTargetsToProduceUpgrade(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
     {
-        return NotYetImplemented;
+        for (const BuildTarget& buildTarget : buildTargets)
+        {
+            ObjectID id = buildTarget.id;
+            if (IsUpgrade(id) && !ContainsID(state.GetUpgrades(), id))
+            {
+                bool techAllows;
+                ErrorCode result = state.TechAllows(id, techAllows);
+                CHECK_ERROR(result);
+
+                if (techAllows)
+                {
+                    targetObjects.push_back(id);
+                }
+            }
+        }
+
+        return Success;
     }
 }

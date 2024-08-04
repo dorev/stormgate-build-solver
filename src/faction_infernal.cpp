@@ -4,6 +4,7 @@
 
 namespace SGBuilds
 {
+    /*
     ErrorCode Infernal::ResetGameState(GameState& state) const
     {
         state._Buildings.clear();
@@ -30,7 +31,7 @@ namespace SGBuilds
         return supply;
     }
 
-    int Infernal::LuminiteSaturated(const GameState& state) const
+    bool Infernal::LuminiteSaturated(const GameState& state) const
     {
         int baseCount = 0;
         for (const Building& building : state.GetBuildings())
@@ -44,7 +45,7 @@ namespace SGBuilds
         int workersCollectingLuminite = 0;
         for (const Unit& unit : state.GetUnits())
         {
-            if (unit == ID::Bob && unit.status == Status::CollectingLuminite)
+            if (unit == ID::Bob && unit.status == Task::CollectingLuminite)
             {
                 workersCollectingLuminite++;
             }
@@ -57,4 +58,5 @@ namespace SGBuilds
 
         return workersCollectingLuminite >= (baseCount * 12);
     }
+    */
 }

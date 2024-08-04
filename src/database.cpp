@@ -10,7 +10,7 @@ namespace SGBuilds
                 std::make_shared<Unit>
                 (
                     ID::Bob,
-                    Cost{20, 50, 0},
+                    Cost{ 20, 50, 0 },
                     ID::CommandPost,
                     1,
                     ID::CommandPost | ID::CentralCommand | ID::HighCommand,
@@ -23,7 +23,7 @@ namespace SGBuilds
                 std::make_shared<Unit>
                 (
                     ID::Exo,
-                    Cost{28, 100, 25},
+                    Cost{ 28, 100, 25 },
                     ID::BiokineticsLab,
                     2,
                     ID::Barracks
@@ -34,7 +34,7 @@ namespace SGBuilds
                 std::make_shared<Unit>
                 (
                     ID::MedTech,
-                    Cost{30, 100, 50},
+                    Cost{ 30, 100, 50 },
                     ID::CentralCommand,
                     3,
                     ID::Barracks
@@ -45,7 +45,7 @@ namespace SGBuilds
                 std::make_shared<Upgrade>
                 (
                     ID::QuickdrawHustle,
-                    Cost{60, 100, 100},
+                    Cost{ 60, 100, 100 },
                     ID::BiokineticsLab,
                     ID::BiokineticsLab
                 )
@@ -55,8 +55,8 @@ namespace SGBuilds
                 std::make_shared<Building>
                 (
                     ID::CommandPost,
-                    Cost{90, 400, 0},
-                    0,
+                    Cost{ 90, 400, 0 },
+                    ID::NoRequirements,
                     ID::CentralCommand,
                     99,
                     true
@@ -67,7 +67,7 @@ namespace SGBuilds
                 std::make_shared<Building>
                 (
                     ID::CentralCommand,
-                    Cost{40, 200, 100},
+                    Cost{ 40, 200, 100 },
                     ID::CommandPost | ID::Barracks,
                     ID::HighCommand,
                     99,
@@ -79,9 +79,9 @@ namespace SGBuilds
                 std::make_shared<Building>
                 (
                     ID::Barracks,
-                    Cost{40, 150, 0},
+                    Cost{ 40, 150, 0 },
                     ID::CommandPost,
-                    0,
+                    ID::NoTransformation,
                     0,
                     true
                 )
@@ -91,11 +91,24 @@ namespace SGBuilds
                 std::make_shared<Building>
                 (
                     ID::CentralCommand,
-                    Cost{20, 200, 0},
-                    0,
+                    Cost{ 20, 200, 0 },
+                    ID::NoRequirements,
                     ID::SolarHabitat | ID::Rampart,
                     10,
                     false
+                )
+            },
+            {
+                ID::SolarHabitat,
+                std::make_shared<Building>
+                (
+                    ID::CentralCommand,
+                    Cost{ 1, 100, 0 }, // TODO: confirm this value, luminite cost has been guessed here
+                    ID::CentralCommand,
+                    ID::NoTransformation,
+                    15,
+                    false,
+                    ID::SolarHabitatBuff
                 )
             }
         }

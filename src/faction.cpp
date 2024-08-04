@@ -1,4 +1,6 @@
 #include "faction.h"
+#include "gamestate.h"
+#include "solverstrategy.h"
 
 namespace SGBuilds
 {
@@ -31,5 +33,44 @@ namespace SGBuilds
     const SolverStrategy& Faction::Strategy(const ObjectID& id)
     {
         return Faction::Get(id).GetSolverStrategy();
+    }
+
+    // Dummy implementations for virtual methods
+    // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+    ErrorCode Faction::ResetGameState(GameState& state) const
+    {
+        return NotYetImplemented;
+    }
+
+    const SolverStrategy& Faction::GetSolverStrategy() const
+    {
+        static const VanguardStrategy strategy;
+        return strategy;
+    }
+
+    int Faction::GetPopulationCap(const GameState& state) const
+    {
+        return -1;
+    }
+
+    bool Faction::LuminiteSaturated(const GameState& state) const
+    {
+        return false;
+    }
+
+    ErrorCode Faction::StartBuildingProduction(GameState& state) const
+    {
+        return NotYetImplemented;
+    }
+
+    ErrorCode Faction::FinishBuildingProduction(GameState& state) const
+    {
+        return NotYetImplemented;
+    }
+
+    bool Faction::HasBuilderAvailable(const GameState& state) const
+    {
+        return false;
     }
 }

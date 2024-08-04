@@ -8,7 +8,6 @@ namespace SGBuilds
     {
     }
 
-
     const ObjectID& GameState::GetTargetObject() const
     {
         return _TargetObject;
@@ -151,7 +150,7 @@ namespace SGBuilds
         return Success;
     }
 
-    int GameState::GetTime()
+    float GameState::GetTime()
     {
         return _Time;
     }
@@ -164,6 +163,11 @@ namespace SGBuilds
     const std::vector<Unit>& GameState::GetUnits() const
     {
         return _Units;
+    }
+
+    const std::vector<Upgrade>& GameState::GetUpgrades() const
+    {
+        return _Upgrades;
     }
 
     ErrorCode GameState::TechAllows(ObjectID objectId, bool& allowed) const
@@ -222,7 +226,7 @@ namespace SGBuilds
         }
 
         // Find if we have a producer building available
-        if (object & ID::Unit)
+        if (IsUnit(object) || IsUpgrade(object))
         {
             ObjectID producerBuildingId = static_cast<const Unit&>(object).producer;
             int producerBuildingCount = 0;
@@ -234,6 +238,10 @@ namespace SGBuilds
                     break;
                 }
             }
+        }
+        else if (IsBuilding(object))
+        {
+            canProduce = _Faction.HasBuilderAvailable(*this);
         }
 
         return Success;
@@ -264,6 +272,11 @@ namespace SGBuilds
         _Luminite -= object.cost.luminite;
         _Therium -= object.cost.therium;
 
+        if (IsBuilding(id))
+        {
+            _Faction.StartBuildingProduction(*this);
+        }
+
         _PendingObjects.emplace_back(object);
 
         return Success;
@@ -283,12 +296,12 @@ namespace SGBuilds
     {
         for (const Unit& unit : _Units)
         {
-            switch (unit.status)
+            switch (unit.task)
             {
-            case Status::CollectingLuminite:
+            case Task::CollectingLuminite:
                 _Luminite += unit.luminitePerSecond;
                 break;
-            case Status::CollectingTherium:
+            case Task::CollectingTherium:
                 _Therium += unit.theriumPerSecond;
                 break;
             default:
@@ -309,7 +322,7 @@ namespace SGBuilds
             if (object.completion >= 1.0f)
             {
                 // Add to the relevant GameState vector
-                
+                // CATCH UP HERE
             }
         }
 

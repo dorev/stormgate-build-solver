@@ -8,6 +8,7 @@
 namespace SGBuilds
 {
     using ObjectID = unsigned;
+    using SpellID = unsigned;
 
     namespace ID
     {
@@ -24,6 +25,9 @@ namespace SGBuilds
 
         constexpr unsigned MaxObjectIDShift             = 16;
         constexpr unsigned ObjectIDMask                 = 0x0000FFFF;
+        constexpr ObjectID NoTransformation             = 0;
+        constexpr ObjectID NoRequirements               = 0;
+        constexpr ObjectID NoObject                     = 0;
 
         // Vanguard
 
@@ -69,22 +73,24 @@ namespace SGBuilds
         constexpr ObjectID SkysprintRetrofit            = Vanguard | Upgrade | 0x0800;
         constexpr ObjectID SentinelAdeptAugmentation    = Vanguard | Upgrade | 0x1000;
         constexpr ObjectID CovertBombers                = Vanguard | Upgrade | 0x2000;
+
+        constexpr SpellID SolarHabitatBuff              = Vanguard | Spell | 0x0001; // TODO: find the real name for this
     }
 
-    inline ObjectID DetectFaction(const ObjectID& id)
-    {
-        return id & ID::FactionMask;
-    }
+    inline bool IsBuilding(const ObjectID& id) { return (id & ID::ObjectTypeMask) == ID::Building; }
+    inline bool IsUnit(const ObjectID& id) { return (id & ID::ObjectTypeMask) == ID::Unit; }
+    inline bool IsUpgrade(const ObjectID& id) { return (id & ID::ObjectTypeMask) == ID::Upgrade; }
 
-    using StatusID = unsigned;
-    namespace Status
+    using TaskID = unsigned;
+    namespace Task
     {
-        constexpr StatusID Idle                         = 0;
-        constexpr StatusID CompletingUnit               = 1;
-        constexpr StatusID CompletingUpgrade            = 2;
-        constexpr StatusID CompletingTransformation     = 3;
-        constexpr StatusID CollectingLuminite           = 4;
-        constexpr StatusID CollectingTherium            = 5;
+        constexpr TaskID Idle                         = 0;
+        constexpr TaskID CompletingBuilding           = 1;
+        constexpr TaskID CompletingUnit               = 2;
+        constexpr TaskID CompletingUpgrade            = 3;
+        constexpr TaskID CompletingTransformation     = 4;
+        constexpr TaskID CollectingLuminite           = 5;
+        constexpr TaskID CollectingTherium            = 6;
     }
 
     using DecisionID = unsigned;
@@ -102,9 +108,16 @@ namespace SGBuilds
 
     struct Cost
     {
-        const int time;
-        const float luminite;
-        const float therium;
+        const int time = -1;
+        const float luminite = -1.0f;
+        const float therium = -1.0f;
+    };
+
+    struct Buff
+    {
+        SpellID id = 0;
+        float startTime = -1.0f;
+        // TODO : find a way to identify the buff caster (shared_ptr<>?)
     };
 
     struct Object
@@ -112,16 +125,20 @@ namespace SGBuilds
         const ObjectID id;
         const Cost cost;
         const ObjectID requirements;
-        StatusID status;
+        SpellID spells;
+        TaskID task;
+        Buff buff;
         float completion;
 
         operator ObjectID() const { return id; }
 
-        Object(ObjectID id = 0, Cost cost = { 0, 0 }, ObjectID requirements = 0)
+        Object(ObjectID id = 0, Cost cost = { 0, 0 }, ObjectID requirements = 0, SpellID spells = 0)
             : id(id)
             , cost(cost)
             , requirements(requirements)
-            , status(Status::Idle)
+            , spells(0)
+            , task(Task::Idle)
+            , buff()
             , completion(1.0f)
         {
         }
@@ -157,7 +174,7 @@ namespace SGBuilds
 
         bool IsIdle() const
         {
-            return status == Status::Idle;
+            return task == Task::Idle;
         }
     };
 
@@ -167,8 +184,8 @@ namespace SGBuilds
         const int supply;
         const bool producer;
 
-        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID transformation = 0, int supply = 0, int producer = false)
-            : Object(id, cost, requirements)
+        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID transformation = 0, int supply = 0, int producer = false, SpellID spells = 0)
+            : Object(id, cost, requirements, spells)
             , transformable(transformation)
             , supply(supply)
             , producer(producer)
@@ -241,7 +258,7 @@ namespace SGBuilds
     {
         return !(object == target);
     }
-    
+
     inline bool operator!=(const BuildTarget& target, const Object& object)
     {
         return object != target;

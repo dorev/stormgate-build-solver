@@ -11,9 +11,9 @@ namespace SGBuilds
     {
     private:
         static constexpr float TimeIncrementPerUpdate = 1.0f;
-        friend ErrorCode Vanguard::ResetGameState(GameState&) const;
-        friend ErrorCode Infernal::ResetGameState(GameState&) const;
-        friend ErrorCode Celestial::ResetGameState(GameState&) const;
+        friend class Vanguard;
+        friend class Infernal;
+        friend class Celestial;
 
     public:
         GameState();
@@ -24,9 +24,10 @@ namespace SGBuilds
         ErrorCode HasReachedTarget(const BuildTarget& target, bool& hasReachedTarget);
         ErrorCode HasCompletedBuild(const std::vector<BuildTarget>& buildTargets, bool& buildCompleted);
         ErrorCode ListNextAccessibleTargets(const std::vector<BuildTarget>& targets, std::vector<ObjectID>& accessibleTargets);
-        int GetTime();
+        float GetTime();
         const std::vector<Building>& GetBuildings() const;
         const std::vector<Unit>& GetUnits() const;
+        const std::vector<Upgrade>& GetUpgrades() const;
         ErrorCode TechAllows(ObjectID objectId, bool& allowed) const;
         ErrorCode IsAllowedByTech(const Object& object, bool& allowed) const;
         ErrorCode CanAfford(ObjectID id, bool& canAfford);
@@ -45,7 +46,7 @@ namespace SGBuilds
     private:
         ObjectID _TargetObject;
         const Faction& _Faction;
-        int _Time;
+        float _Time;
         float _Luminite;
         float _Therium;
         std::vector<Unit> _Units;
