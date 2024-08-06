@@ -12,7 +12,7 @@ namespace SGBuilds
         , spells(spells)
         , task(Task::Idle)
         , buff()
-        , completion(1.0f)
+        , completion(0.0f)
     {
     }
 
@@ -25,6 +25,24 @@ namespace SGBuilds
         , buff(other.buff)
         , completion(other.completion)
     {
+    }
+
+    Object::Object(const ObjectID& objectId)
+    {
+        const Object& prototype = Database::Get(objectId);
+        if (prototype.id == ID::NoObject)
+        {
+            // TODO: big problem! assert
+            return;
+        }
+
+        id = prototype.id;
+        cost = prototype.cost;
+        requirements = prototype.requirements;
+        spells = prototype.spells;
+        task = Task::Idle;
+        buff = Buff();
+        completion = 0.0f;
     }
 
     Object& Object::operator=(const Object& other)
@@ -72,6 +90,8 @@ namespace SGBuilds
         return Success;
     }
 
+    // Building
+
     Building::Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID transformation, int supply, int producer, SpellID spells)
         : Object(id, cost, requirements, spells)
         , transformable(transformation)
@@ -80,12 +100,29 @@ namespace SGBuilds
     {
     }
 
-    Building::Building(const Object& object)
+    Building::Building(const ObjectID& objectId)
     {
-        const Object& proto = Database::Get(object.id);
-        (void) proto;
-        // TODO: complete!
+        if (objectId == ID::NoObject || !IsBuilding(objectId))
+        {
+            // TODO: big problem! assert
+            return;
+        }
+
+        const Building& prototype = static_cast<const Building&>(Database::Get(objectId));
+
+        id = prototype.id;
+        cost = prototype.cost;
+        requirements = prototype.requirements;
+        spells = prototype.spells;
+        task = Task::Idle;
+        buff = Buff();
+        completion = 0.0f;
+        transformable = prototype.transformable;
+        supply = prototype.supply;
+        producer = prototype.producer;
     }
+
+    // Unit
 
     Unit::Unit(ObjectID id, Cost cost, ObjectID requirements, int supply, ObjectID producer, float luminitePerSecond, float theriumPerSecond)
         : Object(id, cost, requirements)
@@ -96,12 +133,30 @@ namespace SGBuilds
     {
     }
 
-    Unit::Unit(const Object& object)
+    Unit::Unit(const ObjectID& objectId)
     {
-        const Object& proto = Database::Get(object.id);
-        (void) proto;
-        // TODO: complete!
+        if (objectId == ID::NoObject || !IsUnit(objectId))
+        {
+            // TODO: big problem! assert
+            return;
+        }
+
+        const Unit& prototype = static_cast<const Unit&>(Database::Get(objectId));
+
+        id = prototype.id;
+        cost = prototype.cost;
+        requirements = prototype.requirements;
+        spells = prototype.spells;
+        task = Task::Idle;
+        buff = Buff();
+        completion = 0.0f;
+        supply = prototype.supply;
+        producer = prototype.producer;
+        luminitePerSecond = prototype.luminitePerSecond;
+        theriumPerSecond = prototype.theriumPerSecond;
     }
+
+    // Upgrade
 
     Upgrade::Upgrade(ObjectID id, Cost cost, ObjectID requirements, ObjectID producer)
         : Object(id, cost, requirements)
@@ -109,11 +164,24 @@ namespace SGBuilds
     {
     }
 
-    Upgrade::Upgrade(const Object& object)
+    Upgrade::Upgrade(const ObjectID& objectId)
     {
-        const Object& proto = Database::Get(object.id);
-        (void) proto;
-        // TODO: complete!
+        if (objectId == ID::NoObject || !IsUpgrade(objectId))
+        {
+            // TODO: big problem! assert
+            return;
+        }
+
+        const Upgrade& prototype = static_cast<const Upgrade&>(Database::Get(objectId));
+
+        id = prototype.id;
+        cost = prototype.cost;
+        requirements = prototype.requirements;
+        spells = prototype.spells;
+        task = Task::Idle;
+        buff = Buff();
+        completion = 0.0f;
+        producer = prototype.producer;
     }
 
 }

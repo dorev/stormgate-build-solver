@@ -126,26 +126,29 @@ namespace SGBuilds
     class Object
     {
     public:
-        ObjectID id = 0;
+        ObjectID id = ID::NoObject;
         Cost cost { 0, 0 , 0};
-        ObjectID requirements = 0;
+        ObjectID requirements = ID::NoObject;
         SpellID spells = 0;
         TaskID task = Task::Idle;
         Buff buff = { 0, 0 };
-        float completion = 1.0f;
+        float completion = 0.0f;
 
         operator ObjectID() const { return id; }
         bool IsIdle() const { return task == Task::Idle; }
 
-        Object(ObjectID id = 0, Cost cost = { 0, 0 }, ObjectID requirements = 0, SpellID spells = 0);
+        Object(ObjectID id = ID::NoObject, Cost cost = { 0, 0 }, ObjectID requirements = ID::NoObject, SpellID spells = 0);
         Object(const Object& other);
+        Object(const ObjectID& objectId);
         Object& operator=(const Object& other);
         virtual ~Object();
 
         ErrorCode ExpandRequirements(std::vector<ObjectID>& requiredBuildings) const;
+        unsigned GetUID() const { return _UID; }
 
         private:
-            unsigned _UID;
+            inline static unsigned _NextUID = 0;
+            const unsigned _UID = _NextUID++;
     };
 
     using ObjectPtr = std::shared_ptr<Object>;
@@ -157,8 +160,8 @@ namespace SGBuilds
         int supply;
         bool producer;
 
-        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID transformation = 0, int supply = 0, int producer = false, SpellID spells = 0);
-        Building(const Object& object = Object());
+        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID transformation = ID::NoObject, int supply = 0, int producer = false, SpellID spells = 0);
+        Building(const ObjectID& objectId);
     };
 
     class Unit : public Object
@@ -170,7 +173,7 @@ namespace SGBuilds
         float theriumPerSecond;
 
         Unit(ObjectID id, Cost cost, ObjectID requirements, int supply, ObjectID producer, float luminitePerSecond = 0.0f, float theriumPerSecond = 0.0f);
-        Unit(const Object& object = Object());
+        Unit(const ObjectID& objectId);
     };
 
     class Upgrade : public Object
@@ -179,7 +182,7 @@ namespace SGBuilds
         ObjectID producer;
 
         Upgrade(ObjectID id, Cost cost, ObjectID requirements, ObjectID producer);
-        Upgrade(const Object& object = Object());
+        Upgrade(const ObjectID& objectId);
     };
 
     struct BuildTarget
