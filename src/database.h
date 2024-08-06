@@ -9,7 +9,7 @@
 // Sustainable harvest -> 5 workers
 
 #define CHECK_OBJECT(object) if (object.id == 0) { return NoData; }
-#define GET_OBJECT(variableName, objectId) const Object& variableName = Database::Get(objectId); CHECK_OBJECT(variableName)
+#define GET_PROTOTYPE(variableName, objectId) const Object& variableName = Database::Get(objectId); CHECK_OBJECT(variableName)
 
 namespace SGBuilds
 {

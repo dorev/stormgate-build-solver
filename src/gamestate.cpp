@@ -44,7 +44,7 @@ namespace SGBuilds
     ErrorCode GameState::HasReachedTarget(const BuildTarget& target, bool& hasReachedTarget)
     {
         int targetCount = 0;
-        ObjectID objectType = target.id & ID::ObjectTypeMask;
+        ObjectID objectType = GetObjectType(target);
 
         // TODO: there is probably a way to make this prettier...
         switch (objectType)
@@ -172,7 +172,7 @@ namespace SGBuilds
 
     ErrorCode GameState::TechAllows(ObjectID objectId, bool& allowed) const
     {
-        GET_OBJECT(object, objectId);
+        GET_PROTOTYPE(object, objectId);
         return IsAllowedByTech(object, allowed);
     }
 
@@ -198,7 +198,7 @@ namespace SGBuilds
 
     ErrorCode GameState::CanAfford(ObjectID id, bool& canAfford)
     {
-        GET_OBJECT(object, id);
+        GET_PROTOTYPE(object, id);
         return CanAfford(object, canAfford);
     }
 
@@ -210,7 +210,7 @@ namespace SGBuilds
 
     ErrorCode GameState::CanProduce(ObjectID objectId, bool& techAllows, bool& canProduce)
     {
-        GET_OBJECT(object, objectId);
+        GET_PROTOTYPE(object, objectId);
         return CanProduce(object, techAllows, canProduce);
     }
 
@@ -229,7 +229,6 @@ namespace SGBuilds
         if (IsUnit(object) || IsUpgrade(object))
         {
             ObjectID producerBuildingId = static_cast<const Unit&>(object).producer;
-            int producerBuildingCount = 0;
             for (const Building& building : _Buildings)
             {
                 if (building == producerBuildingId && building.IsIdle())
@@ -249,7 +248,7 @@ namespace SGBuilds
 
     ErrorCode GameState::CheckProductionCapability(ObjectID objectId, bool& techAllows, bool& canAfford, bool& canProduce)
     {
-        GET_OBJECT(object, objectId);
+        GET_PROTOTYPE(object, objectId);
 
         ErrorCode result = CanAfford(object, canAfford);
         CHECK_ERROR(result);
@@ -262,7 +261,7 @@ namespace SGBuilds
 
     ErrorCode GameState::Buy(ObjectID id)
     {
-        GET_OBJECT(object, id);
+        GET_PROTOTYPE(object, id);
 
         if (object.cost.luminite >= _Luminite || object.cost.therium >= _Therium)
         {
@@ -277,7 +276,7 @@ namespace SGBuilds
             _Faction.StartBuildingProduction(*this);
         }
 
-        _PendingObjects.emplace_back(object);
+        _PendingObjects.emplace_back(std::make_shared<Object>(object));
 
         return Success;
     }
@@ -316,19 +315,35 @@ namespace SGBuilds
     {
         for (auto itr = _PendingObjects.rbegin(); itr != _PendingObjects.rend(); ++itr)
         {
-            Object& object = *itr;
-            object.completion += TimeIncrementPerUpdate / object.cost.time;
+            ObjectPtr object = *itr;
 
-            if (object.completion >= 1.0f)
+            float productionBuffFactor = 1.0f;
+            if (object->buff.id == ID::SolarHabitatBuff)
             {
-                // Add to the relevant GameState vector
+                productionBuffFactor += 0.25;
+            }
+
+            // NOTE: What's the production buff if more workers come to help build?
+
+            object->completion += (TimeIncrementPerUpdate / object->cost.time) * productionBuffFactor;
+
+            if (object->completion >= 1.0f)
+            {
                 // CATCH UP HERE
+                // Add to the relevant GameState vector
+                switch (GetObjectType(*object))
+                {
+                case ID::Building:
+                    //_Buildings.emplace_back();
+                case ID::Unit:
+                case ID::Upgrade:
+                    break;
+                }
+
+                // Remove pending object from this vector
             }
         }
 
-        // Tick time progress
-        // Clear reached targets (oui! c'est ici que ca se passe!)
-        // TODO: consider production buff? (ex: SolarHabitat +25% buff)
         return NotYetImplemented;
     }
 }

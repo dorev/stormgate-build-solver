@@ -40,6 +40,7 @@ namespace SGBuilds
 
     ErrorCode Faction::ResetGameState(GameState& state) const
     {
+        (void) state;
         return NotYetImplemented;
     }
 
@@ -51,26 +52,31 @@ namespace SGBuilds
 
     int Faction::GetPopulationCap(const GameState& state) const
     {
+        (void) state;
         return -1;
     }
 
     bool Faction::LuminiteSaturated(const GameState& state) const
     {
+        (void) state;
         return false;
     }
 
     ErrorCode Faction::StartBuildingProduction(GameState& state) const
     {
+        (void) state;
         return NotYetImplemented;
     }
 
     ErrorCode Faction::FinishBuildingProduction(GameState& state) const
     {
+        (void) state;
         return NotYetImplemented;
     }
 
     bool Faction::HasBuilderAvailable(const GameState& state) const
     {
+        (void) state;
         return false;
     }
 }

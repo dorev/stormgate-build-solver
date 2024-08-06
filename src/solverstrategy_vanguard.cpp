@@ -68,16 +68,25 @@ namespace SGBuilds
         // Build Habitat
         // Upgrade Habitat to SolarHabitat
         // Upgrade Habitat to Rampart
+        (void) state;
+        (void) buildTargets;
+        (void) targetObjects;
         return NotYetImplemented;
     }
 
     ErrorCode VanguardStrategy::GetTargetsToTech(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
     {
+        (void) state;
+        (void) buildTargets;
+        (void) targetObjects;
         return NotYetImplemented;
     }
 
     ErrorCode VanguardStrategy::GetTargetsToExpand(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
     {
+        (void) state;
+        (void) buildTargets;
+        (void) targetObjects;
         return NotYetImplemented;
     }
 
@@ -86,6 +95,9 @@ namespace SGBuilds
         // Check what units we need for the build
         // Check if tech allows unit
         // Check if supply allows unit
+        (void) state;
+        (void) buildTargets;
+        (void) targetObjects;
         return NotYetImplemented;
     }
 
@@ -94,6 +106,9 @@ namespace SGBuilds
         // Check what units we need for the build
         // Check what producer buildings we need for this
         // Check if tech allows unit
+        (void) state;
+        (void) buildTargets;
+        (void) targetObjects;
         return NotYetImplemented;
     }
 
@@ -102,6 +117,9 @@ namespace SGBuilds
         // A worker for luminite
         // A worker for therium
         // Set their status appropriately in the pending object
+        (void) state;
+        (void) buildTargets;
+        (void) targetObjects;
         return NotYetImplemented;
     }
 

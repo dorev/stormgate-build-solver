@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 namespace SGBuilds
 {
@@ -80,6 +81,8 @@ namespace SGBuilds
     inline bool IsBuilding(const ObjectID& id) { return (id & ID::ObjectTypeMask) == ID::Building; }
     inline bool IsUnit(const ObjectID& id) { return (id & ID::ObjectTypeMask) == ID::Unit; }
     inline bool IsUpgrade(const ObjectID& id) { return (id & ID::ObjectTypeMask) == ID::Upgrade; }
+    inline ObjectID GetObjectType(const ObjectID& id) { return id & ID::ObjectTypeMask; }
+    inline ObjectID GetObjectFaction(const ObjectID& id) { return id & ID::FactionMask; }
 
     using TaskID = unsigned;
     namespace Task
@@ -108,9 +111,9 @@ namespace SGBuilds
 
     struct Cost
     {
-        const int time = -1;
-        const float luminite = -1.0f;
-        const float therium = -1.0f;
+        int time = -1;
+        float luminite = -1.0f;
+        float therium = -1.0f;
     };
 
     struct Buff
@@ -120,105 +123,63 @@ namespace SGBuilds
         // TODO : find a way to identify the buff caster (shared_ptr<>?)
     };
 
-    struct Object
+    class Object
     {
-        const ObjectID id;
-        const Cost cost;
-        const ObjectID requirements;
-        SpellID spells;
-        TaskID task;
-        Buff buff;
-        float completion;
+    public:
+        ObjectID id = 0;
+        Cost cost { 0, 0 , 0};
+        ObjectID requirements = 0;
+        SpellID spells = 0;
+        TaskID task = Task::Idle;
+        Buff buff = { 0, 0 };
+        float completion = 1.0f;
 
         operator ObjectID() const { return id; }
+        bool IsIdle() const { return task == Task::Idle; }
 
-        Object(ObjectID id = 0, Cost cost = { 0, 0 }, ObjectID requirements = 0, SpellID spells = 0)
-            : id(id)
-            , cost(cost)
-            , requirements(requirements)
-            , spells(0)
-            , task(Task::Idle)
-            , buff()
-            , completion(1.0f)
-        {
-        }
+        Object(ObjectID id = 0, Cost cost = { 0, 0 }, ObjectID requirements = 0, SpellID spells = 0);
+        Object(const Object& other);
+        Object& operator=(const Object& other);
+        virtual ~Object();
 
-        virtual ~Object()
-        {
-        }
+        ErrorCode ExpandRequirements(std::vector<ObjectID>& requiredBuildings) const;
 
-        ErrorCode ExpandRequirements(std::vector<ObjectID>& requiredBuildings) const
-        {
-            if (requirements == 0)
-            {
-                return {};
-            }
-
-            if (requirements & ID::Upgrade || requirements & ID::Unit)
-            {
-                return InvalidRequirements;
-            }
-
-            for (int i = 0; i < ID::MaxObjectIDShift; ++i)
-            {
-                if (i & requirements)
-                {
-                    ObjectID id = requirements & ~(ID::ObjectIDMask);
-                    id |= (1 << i);
-                    requiredBuildings.push_back(id);
-                }
-            }
-
-            return Success;
-        }
-
-        bool IsIdle() const
-        {
-            return task == Task::Idle;
-        }
+        private:
+            unsigned _UID;
     };
 
-    struct Building : Object
-    {
-        const ObjectID transformable;
-        const int supply;
-        const bool producer;
+    using ObjectPtr = std::shared_ptr<Object>;
 
-        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID transformation = 0, int supply = 0, int producer = false, SpellID spells = 0)
-            : Object(id, cost, requirements, spells)
-            , transformable(transformation)
-            , supply(supply)
-            , producer(producer)
-        {
-        }
+    class Building : public Object
+    {
+    public:
+        ObjectID transformable;
+        int supply;
+        bool producer;
+
+        Building(ObjectID id, Cost cost, ObjectID requirements, ObjectID transformation = 0, int supply = 0, int producer = false, SpellID spells = 0);
+        Building(const Object& object = Object());
     };
 
-    struct Unit : Object
+    class Unit : public Object
     {
-        const int supply;
-        const ObjectID producer;
-        const float luminitePerSecond;
-        const float theriumPerSecond;
+    public:
+        int supply;
+        ObjectID producer;
+        float luminitePerSecond;
+        float theriumPerSecond;
 
-        Unit(ObjectID id, Cost cost, ObjectID requirements, int supply, ObjectID producer, float luminitePerSecond = 0.0f, float theriumPerSecond = 0.0f)
-            : Object(id, cost, requirements)
-            , supply(supply)
-            , producer(producer)
-            , luminitePerSecond(luminitePerSecond)
-            , theriumPerSecond(theriumPerSecond)
-        {
-        }
+        Unit(ObjectID id, Cost cost, ObjectID requirements, int supply, ObjectID producer, float luminitePerSecond = 0.0f, float theriumPerSecond = 0.0f);
+        Unit(const Object& object = Object());
     };
 
-    struct Upgrade : Object
+    class Upgrade : public Object
     {
-        const ObjectID producer;
+    public:
+        ObjectID producer;
 
-        Upgrade(ObjectID id, Cost cost, ObjectID requirements, ObjectID producer)
-            : Object(id, cost, requirements)
-            , producer(producer)
-        {
-        }
+        Upgrade(ObjectID id, Cost cost, ObjectID requirements, ObjectID producer);
+        Upgrade(const Object& object = Object());
     };
 
     struct BuildTarget

@@ -52,7 +52,7 @@ namespace SGBuilds
         std::vector<Unit> _Units;
         std::vector<Building> _Buildings;
         std::vector<Upgrade> _Upgrades;
-        std::vector<Object> _PendingObjects;
+        std::vector<std::shared_ptr<Object>> _PendingObjects;
         bool _BuildCompleted;
     };
 }

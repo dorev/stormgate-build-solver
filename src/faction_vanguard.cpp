@@ -11,10 +11,10 @@ namespace SGBuilds
         state._Upgrades.clear();
         state._PendingObjects.clear();
 
-        GET_OBJECT(commandPost, ID::CommandPost);
+        GET_PROTOTYPE(commandPost, ID::CommandPost);
         state._Buildings.push_back(static_cast<const Building&>(commandPost));
 
-        GET_OBJECT(protoBob, ID::Bob);
+        GET_PROTOTYPE(protoBob, ID::Bob);
         Unit bob = static_cast<const Unit&>(protoBob);
         bob.task = Task::CollectingLuminite;
         for (int i = 0; i < 10; ++i)
@@ -22,7 +22,7 @@ namespace SGBuilds
             state._Units.push_back(static_cast<const Unit&>(bob));
         }
 
-        GET_OBJECT(scout, ID::Scout);
+        GET_PROTOTYPE(scout, ID::Scout);
         state._Units.push_back(static_cast<const Unit&>(scout));
 
         state._Luminite = 100; // TODO: Validate this

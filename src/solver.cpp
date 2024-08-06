@@ -28,11 +28,13 @@ namespace SGBuilds
 
     ErrorCode Solver::GetBuildOrderSize(unsigned& buildOrderSize)
     {
+        (void) buildOrderSize;
         return NotYetImplemented;
     }
 
     ErrorCode Solver::ReadAndClearBuildOrder(BuildOrderStep*& buildOrderSteps)
     {
+        (void) buildOrderSteps;
         return NotYetImplemented;
     }
 
@@ -44,7 +46,7 @@ namespace SGBuilds
         }
 
         // Validate faction
-        ObjectID factionId = targetList[0].id & ID::FactionMask;
+        ObjectID factionId = GetObjectFaction(targetList[0]);
         if (factionId != ID::Vanguard && factionId != ID::Infernal && factionId != ID::Celestial)
         {
             return InvalidFaction;
@@ -55,7 +57,7 @@ namespace SGBuilds
         // Validate that all objects belong to the same faction
         for (const BuildTarget& target : targetList)
         {
-            if ((target.id & ID::FactionMask) != factionId)
+            if (GetObjectFaction(target) != factionId)
             {
                 return MultipleFactionsInList;
             }
@@ -72,7 +74,7 @@ namespace SGBuilds
         // Production building identified that way will have a count of 0, to indicate an arbitrary count
         for (const BuildTarget& target : _Targets)
         {
-            GET_OBJECT(object, target.id);
+            GET_PROTOTYPE(object, target.id);
 
             std::vector<ObjectID> targetRequirements;
             ErrorCode result = object.ExpandRequirements(targetRequirements);
@@ -83,7 +85,7 @@ namespace SGBuilds
             {
                 if (!ContainsID(_Targets, id))
                 {
-                    GET_OBJECT(requiredBuilding, id);
+                    GET_PROTOTYPE(requiredBuilding, id);
                     bool arbitraryCount = static_cast<const Building&>(requiredBuilding).producer;
                     _Targets.push_back({ id, arbitraryCount ? 0 : 1 });
                 }
