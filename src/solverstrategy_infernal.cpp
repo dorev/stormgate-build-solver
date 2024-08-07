@@ -2,66 +2,66 @@
 
 namespace SGBuilds
 {
-    ErrorCode InfernalStrategy::Update(const std::vector<BuildTarget>& buildTargets, NodePtr& node) const
+    ErrorCode InfernalStrategy::Update(const std::vector<Objective>& objective, NodePtr& node) const
     {
-        (void) buildTargets;
+        (void) objective;
         (void) node;
         return NotYetImplemented;
     }
 
-    ErrorCode InfernalStrategy::GetTargetsToIncreaseSupply(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode InfernalStrategy::GetObjectivesToIncreaseSupply(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode InfernalStrategy::GetTargetsToTech(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode InfernalStrategy::GetObjectivesToTech(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode InfernalStrategy::GetTargetsToExpand(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode InfernalStrategy::GetObjectivesToExpand(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode InfernalStrategy::GetTargetsToProduceUnit(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode InfernalStrategy::GetObjectivesToProduceUnit(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode InfernalStrategy::GetTargetsToProduceProducer(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode InfernalStrategy::GetObjectivesToProduceProducer(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode InfernalStrategy::GetTargetsToProduceWorker(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode InfernalStrategy::GetObjectivesToProduceWorker(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode InfernalStrategy::GetTargetsToProduceUpgrade(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode InfernalStrategy::GetObjectivesToProduceUpgrade(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 }

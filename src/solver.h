@@ -20,20 +20,20 @@ namespace SGBuilds
     class Solver
     {
     public:
-        ErrorCode Solve(BuildTarget* targets, unsigned targetsSize);
+        ErrorCode Solve(Objective* objectives, unsigned objectivesSize);
         ErrorCode GetBuildOrderSize(unsigned& buildOrderSize);
         ErrorCode ReadAndClearBuildOrder(BuildOrderStep*& buildOrderSteps);
 
     private:
-        ErrorCode ValidateTargetList(std::vector<BuildTarget> targetList);
-        ErrorCode PrepareTargets(std::vector<BuildTarget>& targetList);
+        ErrorCode ValidateObjectiveList(std::vector<Objective> objectiveList);
+        ErrorCode PrepareObjectives(std::vector<Objective>& objectiveList);
         ErrorCode InitSolver();
         ErrorCode ProcessGraph();
         ErrorCode PrepareBuildOrder();
 
     private:
         ObjectID _Faction;
-        std::vector<BuildTarget> _Targets;
+        std::vector<Objective> _Objectives;
 
         Graph _Graph;
         std::vector<NodePtr> _LeafNodes;

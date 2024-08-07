@@ -4,7 +4,7 @@ namespace SGBuilds
 {
     // NOTE: We'll see later, but this Update method looks quite faction agnostic!
 
-    ErrorCode VanguardStrategy::Update(const std::vector<BuildTarget>& buildTargets, NodePtr& node) const
+    ErrorCode VanguardStrategy::Update(const std::vector<Objective>& objective, NodePtr& node) const
     {
         ErrorCode result;
 
@@ -15,14 +15,14 @@ namespace SGBuilds
 
         GameState& state = node->state;
 
-        // Progress on current target
-        const ObjectID& target = state.GetTargetObject();
-        bool nodeTargetReached = false;
+        // Progress on current objective
+        const ObjectID& objectId = state.GetObjectiveObject();
+        bool nodeObjectiveReached = false;
 
-        if (target)
+        if (objectId != ID::NoObject)
         {
             bool canAfford, techAllows, canProduce;
-            result = state.CheckProductionCapability(target, techAllows, canAfford, canProduce);
+            result = state.CheckProductionCapability(objectId, techAllows, canAfford, canProduce);
             CHECK_ERROR(result);
 
             if (!techAllows)
@@ -32,30 +32,30 @@ namespace SGBuilds
 
             if (canAfford && canProduce)
             {
-                result = state.Buy(target);
+                result = state.Buy(objectId);
                 CHECK_ERROR(result);
 
-                nodeTargetReached = true;
+                nodeObjectiveReached = true;
             }
         }
 
-        // When target is reached, prepare next generation of nodes
-        if (nodeTargetReached)
+        // When objective is reached, prepare next generation of nodes
+        if (nodeObjectiveReached)
         {
-            // For all possible decisions, evaluate all possible targets
-            std::vector<ObjectID> nextNodeTargets;
+            // For all possible decisions, evaluate all possible objectives
+            std::vector<ObjectID> nextNodeObjectives;
             for (int decision = 0; decision < Decision::MaxDecision; ++decision)
             {
                 // NOTE: This is likely the only call that has faction-specific logic
-                GetTargetsForDecision(decision, state, buildTargets, nextNodeTargets);
+                GetObjectivesForDecision(decision, state, objective, nextNodeObjectives);
             }
 
-            // Add a child node for each possible target
+            // Add a child node for each possible objective
             Graph& graph = node->graph;
-            for (const ObjectID& targetObject : nextNodeTargets)
+            for (const ObjectID& objectiveObject : nextNodeObjectives)
             {
                 NodePtr newChildNode = graph.AddNode(state);
-                newChildNode->state.SetTargetObject(targetObject);
+                newChildNode->state.SetObjectiveObject(objectiveObject);
                 graph.AddEdge(node, newChildNode);
             }
         }
@@ -63,71 +63,71 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode VanguardStrategy::GetTargetsToIncreaseSupply(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode VanguardStrategy::GetObjectivesToIncreaseSupply(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         // Build Habitat
         // Upgrade Habitat to SolarHabitat
         // Upgrade Habitat to Rampart
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetTargetsToTech(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode VanguardStrategy::GetObjectivesToTech(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetTargetsToExpand(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode VanguardStrategy::GetObjectivesToExpand(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetTargetsToProduceUnit(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode VanguardStrategy::GetObjectivesToProduceUnit(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         // Check what units we need for the build
         // Check if tech allows unit
         // Check if supply allows unit
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetTargetsToProduceProducer(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode VanguardStrategy::GetObjectivesToProduceProducer(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         // Check what units we need for the build
         // Check what producer buildings we need for this
         // Check if tech allows unit
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetTargetsToProduceWorker(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode VanguardStrategy::GetObjectivesToProduceWorker(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         // A worker for luminite
         // A worker for therium
         // Set their status appropriately in the pending object
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetTargetsToProduceUpgrade(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode VanguardStrategy::GetObjectivesToProduceUpgrade(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
-        for (const BuildTarget& buildTarget : buildTargets)
+        for (const Objective& buildObjective : objective)
         {
-            ObjectID id = buildTarget.id;
+            ObjectID id = buildObjective.id;
             if (IsUpgrade(id) && !ContainsID(state.GetUpgrades(), id))
             {
                 bool techAllows;
@@ -136,7 +136,7 @@ namespace SGBuilds
 
                 if (techAllows)
                 {
-                    targetObjects.push_back(id);
+                    objects.push_back(id);
                 }
             }
         }

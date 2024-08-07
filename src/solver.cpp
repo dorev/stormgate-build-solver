@@ -4,14 +4,14 @@
 
 namespace SGBuilds
 {
-    ErrorCode Solver::Solve(BuildTarget* targets, unsigned targetsSize)
+    ErrorCode Solver::Solve(Objective* objectives, unsigned objectivesSize)
     {
-        std::vector<BuildTarget> targetList = std::vector<BuildTarget>(targets, targets + targetsSize);
+        std::vector<Objective> objectiveList = std::vector<Objective>(objectives, objectives + objectivesSize);
 
-        ErrorCode result = ValidateTargetList(targetList);
+        ErrorCode result = ValidateObjectiveList(objectiveList);
         CHECK_ERROR(result);
 
-        result = PrepareTargets(targetList);
+        result = PrepareObjectives(objectiveList);
         CHECK_ERROR(result);
 
         result = InitSolver();
@@ -38,15 +38,15 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
-    ErrorCode Solver::ValidateTargetList(std::vector<BuildTarget> targetList)
+    ErrorCode Solver::ValidateObjectiveList(std::vector<Objective> objectiveList)
     {
-        if (targetList.empty())
+        if (objectiveList.empty())
         {
-            return EmptyTargetList;
+            return EmptyObjectiveList;
         }
 
         // Validate faction
-        ObjectID factionId = GetObjectFaction(targetList[0]);
+        ObjectID factionId = GetObjectFaction(objectiveList[0]);
         if (factionId != ID::Vanguard && factionId != ID::Infernal && factionId != ID::Celestial)
         {
             return InvalidFaction;
@@ -55,9 +55,9 @@ namespace SGBuilds
         _Faction = factionId;
 
         // Validate that all objects belong to the same faction
-        for (const BuildTarget& target : targetList)
+        for (const Objective& objective : objectiveList)
         {
-            if (GetObjectFaction(target) != factionId)
+            if (GetObjectFaction(objective) != factionId)
             {
                 return MultipleFactionsInList;
             }
@@ -66,28 +66,28 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode Solver::PrepareTargets(std::vector<BuildTarget>& targetList)
+    ErrorCode Solver::PrepareObjectives(std::vector<Objective>& objectiveList)
     {
-        _Targets = targetList;
+        _Objectives = objectiveList;
 
-        // Add targets for missing required objects (ex. missing production buildings for target units)
+        // Add objectives for missing required objects (ex. missing production buildings for objective units)
         // Production building identified that way will have a count of 0, to indicate an arbitrary count
-        for (const BuildTarget& target : _Targets)
+        for (const Objective& objective : _Objectives)
         {
-            GET_PROTOTYPE(object, target.id);
+            GET_PROTOTYPE(object, objective.id);
 
-            std::vector<ObjectID> targetRequirements;
-            ErrorCode result = object.ExpandRequirements(targetRequirements);
+            std::vector<ObjectID> objectiveRequirements;
+            ErrorCode result = object.ExpandRequirements(objectiveRequirements);
             CHECK_ERROR(result);
 
-            // If a requirement is not met in _Targets, add it in
-            for (const ObjectID& id : targetRequirements)
+            // If a requirement is not met in _Objectives, add it in
+            for (const ObjectID& id : objectiveRequirements)
             {
-                if (!ContainsID(_Targets, id))
+                if (!ContainsID(_Objectives, id))
                 {
                     GET_PROTOTYPE(requiredBuilding, id);
                     bool arbitraryCount = static_cast<const Building&>(requiredBuilding).producer;
-                    _Targets.push_back({ id, arbitraryCount ? 0 : 1 });
+                    _Objectives.push_back({ id, arbitraryCount ? 0 : 1 });
                 }
             }
         }
@@ -117,23 +117,23 @@ namespace SGBuilds
                 break;
             }
 
-            // Update all leaves and check if they reach the build order target
+            // Update all leaves and check if they reach the build order objective
             for (NodePtr node : _LeafNodes)
             {
                 result = node->state.Update();
                 CHECK_ERROR(result);
 
-                result = Faction::Strategy(_Faction).Update(_Targets, node);
+                result = Faction::Strategy(_Faction).Update(_Objectives, node);
                 CHECK_ERROR(result);
 
                 bool buildCompleted = false;
-                result = node->state.HasCompletedBuild(_Targets, buildCompleted);
+                result = node->state.HasCompletedBuild(_Objectives, buildCompleted);
                 CHECK_ERROR(result);
 
                 if (buildCompleted)
                 {
                     // Compare with the current solution
-                    // The best branch should reach the build order target in the smallest time possible.
+                    // The best branch should reach the build order objective in the smallest time possible.
                     // A solved branch with a longer time than the current best solution should be pruned.
                     if (_Solution == nullptr || node->state.GetTime() < _Solution->state.GetTime())
                     {
@@ -141,7 +141,7 @@ namespace SGBuilds
                     }
                     else
                     {
-                        // Move up the branch to remove previous nodes that didn't reach the targets
+                        // Move up the branch to remove previous nodes that didn't reach the objectives
                         while (node->parent->children.size() == 1)
                         {
                             node = node->parent;

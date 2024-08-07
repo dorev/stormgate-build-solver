@@ -12,7 +12,7 @@ TEST(Database, Instanciate)
 
 TEST(BuildOrder, QuickdrawExos10MedTechs2)
 {
-    BuildTarget targets[] = 
+    Objective objectives[] = 
     {
         { ID::Exo, 10 },
         { ID::MedTech, 2 },
@@ -20,7 +20,7 @@ TEST(BuildOrder, QuickdrawExos10MedTechs2)
     };
 
     Solver solver;
-    ErrorCode result = solver.Solve(targets, sizeof(targets) / sizeof(ObjectID));
+    ErrorCode result = solver.Solve(objectives, sizeof(objectives) / sizeof(ObjectID));
     EXPECT_EQ(result, Success);
 }
 

@@ -185,7 +185,7 @@ namespace SGBuilds
         Upgrade(const ObjectID& objectId);
     };
 
-    struct BuildTarget
+    struct Objective
     {
         ObjectID id = 0;
         int count = 1;
@@ -202,29 +202,29 @@ namespace SGBuilds
     }
 
     template <>
-    inline bool ContainsID(const std::vector<BuildTarget>& container, ObjectID id)
+    inline bool ContainsID(const std::vector<Objective>& container, ObjectID id)
     {
-        auto itr = std::find_if(container.begin(), container.end(), [id](const BuildTarget& target) { return target.id == id; });
+        auto itr = std::find_if(container.begin(), container.end(), [id](const Objective& objective) { return objective.id == id; });
         return itr != container.end();
     }
 
-    inline bool operator==(const Object& object, const BuildTarget& target)
+    inline bool operator==(const Object& object, const Objective& objective)
     {
-        return object.id == target.id;
+        return object.id == objective.id;
     }
     
-    inline bool operator==(const BuildTarget& target, const Object& object)
+    inline bool operator==(const Objective& objective, const Object& object)
     {
-        return object == target;
+        return object == objective;
     }
 
-    inline bool operator!=(const Object& object, const BuildTarget& target)
+    inline bool operator!=(const Object& object, const Objective& objective)
     {
-        return !(object == target);
+        return !(object == objective);
     }
 
-    inline bool operator!=(const BuildTarget& target, const Object& object)
+    inline bool operator!=(const Objective& objective, const Object& object)
     {
-        return object != target;
+        return object != objective;
     }
 }

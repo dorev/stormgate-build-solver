@@ -2,66 +2,66 @@
 
 namespace SGBuilds
 {
-    ErrorCode CelestialStrategy::Update(const std::vector<BuildTarget>& buildTargets, NodePtr& node) const
+    ErrorCode CelestialStrategy::Update(const std::vector<Objective>& objective, NodePtr& node) const
     {
-        (void) buildTargets;
+        (void) objective;
         (void) node;
         return NotYetImplemented;
     }
 
-    ErrorCode CelestialStrategy::GetTargetsToIncreaseSupply(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode CelestialStrategy::GetObjectivesToIncreaseSupply(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode CelestialStrategy::GetTargetsToTech(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode CelestialStrategy::GetObjectivesToTech(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode CelestialStrategy::GetTargetsToExpand(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode CelestialStrategy::GetObjectivesToExpand(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode CelestialStrategy::GetTargetsToProduceUnit(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode CelestialStrategy::GetObjectivesToProduceUnit(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode CelestialStrategy::GetTargetsToProduceProducer(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode CelestialStrategy::GetObjectivesToProduceProducer(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode CelestialStrategy::GetTargetsToProduceWorker(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode CelestialStrategy::GetObjectivesToProduceWorker(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 
-    ErrorCode CelestialStrategy::GetTargetsToProduceUpgrade(const GameState& state, const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& targetObjects) const
+    ErrorCode CelestialStrategy::GetObjectivesToProduceUpgrade(const GameState& state, const std::vector<Objective>& objective, std::vector<ObjectID>& objects) const
     {
         (void) state;
-        (void) buildTargets;
-        (void) targetObjects;
+        (void) objective;
+        (void) objects;
         return NotYetImplemented;
     }
 }

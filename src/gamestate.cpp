@@ -8,14 +8,14 @@ namespace SGBuilds
     {
     }
 
-    const ObjectID& GameState::GetTargetObject() const
+    const ObjectID& GameState::GetObjectiveObject() const
     {
-        return _TargetObject;
+        return _ObjectiveObject;
     }
 
-    void GameState::SetTargetObject(const ObjectID& targetObject)
+    void GameState::SetObjectiveObject(const ObjectID& objectiveObject)
     {
-        _TargetObject = targetObject;
+        _ObjectiveObject = objectiveObject;
     }
 
     ErrorCode GameState::Reset(const Faction& faction)
@@ -41,10 +41,10 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::HasReachedTarget(const BuildTarget& target, bool& hasReachedTarget)
+    ErrorCode GameState::HasReachedObjective(const Objective& objective, bool& hasReachedObjective)
     {
-        int targetCount = 0;
-        ObjectID objectType = GetObjectType(target);
+        int objectiveCount = 0;
+        ObjectID objectType = GetObjectType(objective);
 
         // TODO: there is probably a way to make this prettier...
         switch (objectType)
@@ -52,9 +52,9 @@ namespace SGBuilds
         case ID::Building:
             for (const Object& object : _Buildings)
             {
-                if (object.id == target.id)
+                if (object.id == objective.id)
                 {
-                    targetCount++;
+                    objectiveCount++;
                 }
             }
             break;
@@ -62,9 +62,9 @@ namespace SGBuilds
         case ID::Unit:
             for (const Object& object : _Units)
             {
-                if (object == target)
+                if (object == objective)
                 {
-                    targetCount++;
+                    objectiveCount++;
                 }
             }
             break;
@@ -72,9 +72,9 @@ namespace SGBuilds
         case ID::Upgrade:
             for (const Object& object : _Upgrades)
             {
-                if (object == target)
+                if (object == objective)
                 {
-                    targetCount++;
+                    objectiveCount++;
                 }
             }
             break;
@@ -83,28 +83,28 @@ namespace SGBuilds
             return InvalidObjectType;
         }
 
-        if (target.count == 0)
+        if (objective.count == 0)
         {
-            hasReachedTarget = targetCount > 0;
+            hasReachedObjective = objectiveCount > 0;
         }
         else
         {
-            hasReachedTarget = targetCount >= target.count;
+            hasReachedObjective = objectiveCount >= objective.count;
         }
 
         return Success;
     }
 
-    ErrorCode GameState::HasCompletedBuild(const std::vector<BuildTarget>& buildTargets, bool& hasReachedTargets)
+    ErrorCode GameState::HasCompletedBuild(const std::vector<Objective>& objectives, bool& hasReachedObjectives)
     {
         if (!_BuildCompleted)
         {
-            for (const BuildTarget& target : buildTargets)
+            for (const Objective& objective : objectives)
             {
-                ErrorCode result = HasReachedTarget(target, hasReachedTargets);
+                ErrorCode result = HasReachedObjective(objective, hasReachedObjectives);
                 CHECK_ERROR(result);
 
-                if (!hasReachedTargets)
+                if (!hasReachedObjectives)
                 {
                     return Success;
                 }
@@ -116,34 +116,34 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::ListNextAccessibleTargets(const std::vector<BuildTarget>& buildTargets, std::vector<ObjectID>& accessibleTargets)
+    ErrorCode GameState::ListNextAccessibleObjectives(const std::vector<Objective>& objectives, std::vector<ObjectID>& accessibleObjectives)
     {
         ErrorCode result;
 
-        // List targets yet to be completed
-        std::vector<ObjectID> remainingTargets;
-        for (const BuildTarget& target : buildTargets)
+        // List objectives yet to be completed
+        std::vector<ObjectID> remainingObjectives;
+        for (const Objective& objective : objectives)
         {
-            bool hasReachedTarget;
-            result = HasReachedTarget(target, hasReachedTarget);
+            bool hasReachedObjective;
+            result = HasReachedObjective(objective, hasReachedObjective);
             CHECK_ERROR(result);
 
-            if (!hasReachedTarget)
+            if (!hasReachedObjective)
             {
-                remainingTargets.push_back(target);
+                remainingObjectives.push_back(objective);
             }
         }
 
         // Filter out inaccessible objects (because of lacking prereqs)
-        for (const ObjectID& targetObject : remainingTargets)
+        for (const ObjectID& objectiveObject : remainingObjectives)
         {
             bool techAllows;
-            result = TechAllows(targetObject, techAllows);
+            result = TechAllows(objectiveObject, techAllows);
             CHECK_ERROR(result);
 
             if (techAllows)
             {
-                accessibleTargets.push_back(targetObject);
+                accessibleObjectives.push_back(objectiveObject);
             }
         }
 

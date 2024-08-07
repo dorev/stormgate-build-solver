@@ -28,7 +28,7 @@ namespace SGBuilds
         state._Luminite = 100; // TODO: Validate this
         state._Therium = 0;
         state._Time = 0;
-        state._TargetObject = BuildTarget();
+        state._ObjectiveObject = Objective();
         state._BuildCompleted = false;
 
         return Success;

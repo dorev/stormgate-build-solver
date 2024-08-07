@@ -17,13 +17,13 @@ namespace SGBuilds
 
     public:
         GameState();
-        const ObjectID& GetTargetObject() const;
-        void SetTargetObject(const ObjectID& targetObject);
+        const ObjectID& GetObjectiveObject() const;
+        void SetObjectiveObject(const ObjectID& objectiveObject);
         ErrorCode Reset(const Faction& faction);
         ErrorCode Update();
-        ErrorCode HasReachedTarget(const BuildTarget& target, bool& hasReachedTarget);
-        ErrorCode HasCompletedBuild(const std::vector<BuildTarget>& buildTargets, bool& buildCompleted);
-        ErrorCode ListNextAccessibleTargets(const std::vector<BuildTarget>& targets, std::vector<ObjectID>& accessibleTargets);
+        ErrorCode HasReachedObjective(const Objective& objective, bool& hasReachedObjective);
+        ErrorCode HasCompletedBuild(const std::vector<Objective>& objective, bool& buildCompleted);
+        ErrorCode ListNextAccessibleObjectives(const std::vector<Objective>& objectives, std::vector<ObjectID>& accessibleObjectives);
         float GetTime();
         const std::vector<Building>& GetBuildings() const;
         const std::vector<Unit>& GetUnits() const;
@@ -44,7 +44,7 @@ namespace SGBuilds
         ErrorCode UpdatePendingObjects();
 
     private:
-        ObjectID _TargetObject;
+        ObjectID _ObjectiveObject;
         const Faction& _Faction;
         float _Time;
         float _Luminite;
