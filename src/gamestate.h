@@ -17,8 +17,8 @@ namespace SGBuilds
 
     public:
         GameState();
-        const ObjectID& GetObjectiveObject() const;
-        void SetObjectiveObject(const ObjectID& objectiveId);
+        ObjectPtr& GetObjectiveObject();
+        void SetObjectiveObject(const ObjectPtr& objectiveObject);
         ErrorCode Reset(const Faction& faction);
         ErrorCode Update();
         ErrorCode HasReachedObjective(const Objective& objective, bool& hasReachedObjective);
@@ -35,7 +35,7 @@ namespace SGBuilds
         ErrorCode CanProduce(ObjectID objectId, bool& techAllows, bool& canProduce);
         ErrorCode CanProduce(const Object& object, bool& techAllows, bool& canProduce);
         ErrorCode CheckProductionCapability(ObjectID objectId, bool& techAllows, bool& canAfford, bool& canProduce);
-        ErrorCode Buy(const ObjectID& objectId, ObjectPtr& object);
+        ErrorCode Buy(ObjectPtr& object);
         ErrorCode Give(const ObjectID& objectId, ObjectPtr& object);
 
     private:
@@ -43,7 +43,7 @@ namespace SGBuilds
         ErrorCode UpdatePendingObjects();
 
     private:
-        ObjectID _ObjectiveId;
+        ObjectPtr _ObjectiveObject;
         const Faction& _Faction;
         float _Time;
         float _Luminite;

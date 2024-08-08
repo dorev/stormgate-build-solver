@@ -16,13 +16,13 @@ namespace SGBuilds
         GameState& state = node->state;
 
         // Progress on current objective
-        const ObjectID& objectId = state.GetObjectiveObject();
+        ObjectPtr& object = state.GetObjectiveObject();
         bool nodeObjectiveReached = false;
 
-        if (objectId != ID::NoObject)
+        if (object != nullptr)
         {
             bool canAfford, techAllows, canProduce;
-            result = state.CheckProductionCapability(objectId, techAllows, canAfford, canProduce);
+            result = state.CheckProductionCapability(object->id, techAllows, canAfford, canProduce);
             CHECK_ERROR(result);
 
             if (!techAllows)
@@ -32,8 +32,7 @@ namespace SGBuilds
 
             if (canAfford && canProduce)
             {
-                static ObjectPtr dummyObject;
-                result = state.Buy(objectId, dummyObject);
+                result = state.Buy(object);
                 CHECK_ERROR(result);
 
                 nodeObjectiveReached = true;
@@ -44,7 +43,7 @@ namespace SGBuilds
         if (nodeObjectiveReached)
         {
             // For all possible decisions, evaluate all possible objectives
-            std::vector<ObjectID> nextNodeObjectives;
+            std::vector<ObjectPtr> nextNodeObjectives;
             for (int decision = 0; decision < Decision::MaxDecision; ++decision)
             {
                 // NOTE: This is likely the only call that has faction-specific logic
@@ -53,7 +52,7 @@ namespace SGBuilds
 
             // Add a child node for each possible objective
             Graph& graph = node->graph;
-            for (const ObjectID& objectiveObject : nextNodeObjectives)
+            for (const ObjectPtr& objectiveObject : nextNodeObjectives)
             {
                 NodePtr newChildNode = graph.AddNode(state);
                 newChildNode->state.SetObjectiveObject(objectiveObject);
@@ -64,7 +63,7 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode VanguardStrategy::GetObjectivesToIncreaseSupply(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectID>& objects) const
+    ErrorCode VanguardStrategy::GetObjectivesToIncreaseSupply(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
         // Build Habitat
         // Upgrade Habitat to SolarHabitat
@@ -75,7 +74,7 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetObjectivesToTech(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectID>& objects) const
+    ErrorCode VanguardStrategy::GetObjectivesToTech(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
         (void) state;
         (void) objectives;
@@ -83,7 +82,7 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetObjectivesToExpand(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectID>& objects) const
+    ErrorCode VanguardStrategy::GetObjectivesToExpand(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
         (void) state;
         (void) objectives;
@@ -91,7 +90,7 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetObjectivesToProduceUnit(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectID>& objects) const
+    ErrorCode VanguardStrategy::GetObjectivesToProduceUnit(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
         // Check what units we need for the build
         // Check if tech allows unit
@@ -102,7 +101,7 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetObjectivesToProduceProducer(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectID>& objects) const
+    ErrorCode VanguardStrategy::GetObjectivesToProduceProducer(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
         // Check what units we need for the build
         // Check what producer buildings we need for this
@@ -113,7 +112,7 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetObjectivesToProduceWorker(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectID>& objects) const
+    ErrorCode VanguardStrategy::GetObjectivesToProduceWorker(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
         // A worker for luminite
         // A worker for therium
@@ -124,7 +123,7 @@ namespace SGBuilds
         return NotYetImplemented;
     }
 
-    ErrorCode VanguardStrategy::GetObjectivesToProduceUpgrade(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectID>& objects) const
+    ErrorCode VanguardStrategy::GetObjectivesToProduceUpgrade(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
         for (const Objective& buildObjective : objectives)
         {
@@ -137,7 +136,7 @@ namespace SGBuilds
 
                 if (techAllows)
                 {
-                    objects.push_back(id);
+                    objects.emplace_back(std::make_shared<Upgrade>(id));
                 }
             }
         }

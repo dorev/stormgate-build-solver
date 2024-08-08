@@ -68,10 +68,9 @@ namespace SGBuilds
         return false;
     }
 
-    ErrorCode Faction::StartProduction(GameState& state, const ObjectID& buildingId, ObjectPtr& object) const
+    ErrorCode Faction::StartProduction(GameState& state, ObjectPtr& object) const
     {
         (void) state;
-        (void) buildingId;
         (void) object;
         return NotYetImplemented;
     }

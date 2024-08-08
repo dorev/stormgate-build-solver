@@ -24,7 +24,7 @@ namespace SGBuilds
         state._Luminite = 100; // TODO: Validate this
         state._Therium = 0;
         state._Time = 0;
-        state._ObjectiveId = Objective();
+        state._ObjectiveObject = nullptr;
         state._BuildCompleted = false;
 
         return Success;
@@ -87,18 +87,18 @@ namespace SGBuilds
         return false;
     }
 
-    ErrorCode Vanguard::StartProduction(GameState& state, const ObjectID& objectId, ObjectPtr& object) const
+    ErrorCode Vanguard::StartProduction(GameState& state, ObjectPtr& object) const
     {
         object = nullptr;
 
-        switch (GetObjectType(objectId))
+        switch (GetObjectType(object->id))
         {
         case ID::Building:
             for (UnitPtr& unit : state._Units)
             {
                 if (unit->id == ID::Bob && unit->task != Task::CompletingBuilding)
                 {
-                    object = state._PendingObjects.emplace_back(std::make_shared<Building>(objectId));
+                    state._PendingObjects.emplace_back(object);
                     unit->task = Task::CompletingBuilding;
                     unit->target = object->GetUID();
                     return Success;
@@ -106,6 +106,7 @@ namespace SGBuilds
             }
             return NoBuilderAvailable;
 
+        // CATCH UP HERE
         case ID::Unit:
         case ID::Upgrade:
         default:

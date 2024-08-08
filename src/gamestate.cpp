@@ -8,14 +8,14 @@ namespace SGBuilds
     {
     }
 
-    const ObjectID& GameState::GetObjectiveObject() const
+    ObjectPtr& GameState::GetObjectiveObject()
     {
-        return _ObjectiveId;
+        return _ObjectiveObject;
     }
 
-    void GameState::SetObjectiveObject(const ObjectID& objectiveObject)
+    void GameState::SetObjectiveObject(const ObjectPtr& objectiveObject)
     {
-        _ObjectiveId = objectiveObject;
+        _ObjectiveObject = objectiveObject;
     }
 
     ErrorCode GameState::Reset(const Faction& faction)
@@ -265,21 +265,17 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::Buy(const ObjectID& objectId, ObjectPtr& object)
+    ErrorCode GameState::Buy(ObjectPtr& object)
     {
-        object = nullptr;
-
-        GET_PROTOTYPE(objectPrototype, objectId);
-
-        if (objectPrototype.cost.luminite >= _Luminite || objectPrototype.cost.therium >= _Therium)
+        if (object->cost.luminite >= _Luminite || object->cost.therium >= _Therium)
         {
             return NotEnoughResources;
         }
 
-        _Luminite -= objectPrototype.cost.luminite;
-        _Therium -= objectPrototype.cost.therium;
+        _Luminite -= object->cost.luminite;
+        _Therium -= object->cost.therium;
 
-        ErrorCode result = _Faction.StartProduction(*this, objectId, object);
+        ErrorCode result = _Faction.StartProduction(*this, object);
         CHECK_ERROR(result);
 
         _PendingObjects.emplace_back(object);
