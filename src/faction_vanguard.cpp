@@ -6,29 +6,25 @@ namespace SGBuilds
 {
     ErrorCode Vanguard::ResetGameState(GameState& state) const
     {
-        state._Buildings.clear();
-        state._Units.clear();
-        state._Upgrades.clear();
-        state._PendingObjects.clear();
+        ObjectPtr object = nullptr;
+        ErrorCode result = state.Give(ID::CommandPost, object);
+        CHECK_ERROR(result);
 
-        GET_PROTOTYPE(commandPost, ID::CommandPost);
-        state._Buildings.push_back(static_cast<const Building&>(commandPost));
-
-        GET_PROTOTYPE(protoBob, ID::Bob);
-        Unit bob = static_cast<const Unit&>(protoBob);
-        bob.task = Task::CollectingLuminite;
         for (int i = 0; i < 10; ++i)
         {
-            state._Units.push_back(static_cast<const Unit&>(bob));
+            result = state.Give(ID::Bob, object);
+            CHECK_ERROR(result);
+
+            object->task = Task::CollectingLuminite;
         }
 
-        GET_PROTOTYPE(scout, ID::Scout);
-        state._Units.push_back(static_cast<const Unit&>(scout));
+        result = state.Give(ID::Scout, object);
+        CHECK_ERROR(result);
 
         state._Luminite = 100; // TODO: Validate this
         state._Therium = 0;
         state._Time = 0;
-        state._ObjectiveObject = Objective();
+        state._ObjectiveId = Objective();
         state._BuildCompleted = false;
 
         return Success;
@@ -43,9 +39,9 @@ namespace SGBuilds
     int Vanguard::GetPopulationCap(const GameState& state) const
     {
         int supply = 0;
-        for (const Building& building : state.GetBuildings())
+        for (const BuildingPtr& building : state.GetBuildings())
         {
-            supply += building.supply;
+            supply += building->supply;
         }
         return supply;
     }
@@ -53,18 +49,18 @@ namespace SGBuilds
     bool Vanguard::LuminiteSaturated(const GameState& state) const
     {
         int baseCount = 0;
-        for (const Building& building : state.GetBuildings())
+        for (const BuildingPtr& building : state.GetBuildings())
         {
-            if (building == ID::CommandPost || building == ID::CentralCommand || building == ID::HighCommand)
+            if (building->id == ID::CommandPost || building->id == ID::CentralCommand || building->id == ID::HighCommand)
             {
                 baseCount++;
             }
         }
 
         int workersCollectingLuminite = 0;
-        for (const Unit& unit : state.GetUnits())
+        for (const UnitPtr& unit : state.GetUnits())
         {
-            if (unit == ID::Bob && unit.task == Task::CollectingLuminite)
+            if (unit->id == ID::Bob && unit->task == Task::CollectingLuminite)
             {
                 workersCollectingLuminite++;
             }
@@ -78,49 +74,58 @@ namespace SGBuilds
         return workersCollectingLuminite >= (baseCount * 12);
     }
 
-    ErrorCode Vanguard::StartBuildingProduction(GameState& state) const
-    {
-        if (!HasBuilderAvailable(state))
-        {
-            return NotEnoughResources;
-        }
-
-        for (Unit& unit : state._Units)
-        {
-            if (unit == ID::Bob && unit.task != Task::CompletingBuilding)
-            {
-                unit.task = Task::CompletingBuilding;
-                break;
-            }
-        }
-
-        return Success;
-    }
-
-    ErrorCode Vanguard::FinishBuildingProduction(GameState& state) const
-    {
-        for (Unit& unit : state._Units)
-        {
-            if (unit == ID::Bob && unit.task == Task::CompletingBuilding)
-            {
-                unit.task = LuminiteSaturated(state) ? Task::CollectingTherium : Task::CollectingLuminite;
-                return Success;
-            }
-        }
-
-        return NotEnoughResources;
-    }
-
     bool Vanguard::HasBuilderAvailable(const GameState& state) const
     {
-        for (const Unit& unit : state.GetUnits())
+        for (const UnitPtr& unit : state.GetUnits())
         {
-            if (unit.id == ID::Bob && unit.task != Task::CompletingBuilding)
+            if (unit->id == ID::Bob && unit->task != Task::CompletingBuilding)
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    ErrorCode Vanguard::StartProduction(GameState& state, const ObjectID& objectId, ObjectPtr& object) const
+    {
+        object = nullptr;
+
+        switch (GetObjectType(objectId))
+        {
+        case ID::Building:
+            for (UnitPtr& unit : state._Units)
+            {
+                if (unit->id == ID::Bob && unit->task != Task::CompletingBuilding)
+                {
+                    object = state._PendingObjects.emplace_back(std::make_shared<Building>(objectId));
+                    unit->task = Task::CompletingBuilding;
+                    unit->target = object->GetUID();
+                    return Success;
+                }
+            }
+            return NoBuilderAvailable;
+
+        case ID::Unit:
+        case ID::Upgrade:
+        default:
+            break;
+        }
+
+        return NotYetImplemented;
+    }
+
+    ErrorCode Vanguard::FinishProduction(GameState& state, ObjectPtr pendingObject) const
+    {
+        for (UnitPtr& unit : state._Units)
+        {
+            if (unit->id == ID::Bob && unit->task == Task::CompletingBuilding && unit->target == pendingObject->GetUID())
+            {
+                unit->task = LuminiteSaturated(state) ? Task::CollectingTherium : Task::CollectingLuminite;
+                unit->target = ID::NoObject;
+            }
+        }
+
+        return Success;
     }
 }

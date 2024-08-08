@@ -32,7 +32,8 @@ namespace SGBuilds
 
             if (canAfford && canProduce)
             {
-                result = state.Buy(objectId);
+                static ObjectPtr dummyObject;
+                result = state.Buy(objectId, dummyObject);
                 CHECK_ERROR(result);
 
                 nodeObjectiveReached = true;

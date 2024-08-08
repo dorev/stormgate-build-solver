@@ -31,8 +31,8 @@ namespace SGBuilds
         void GetLeafNodes(std::vector<NodePtr>& leafNodes);
 
     private:
-        std::shared_ptr<Node> _Root;
-        std::unordered_set<std::shared_ptr<Node>> _Nodes;
+        NodePtr _Root;
+        std::unordered_set<NodePtr> _Nodes;
     };
 
     using NodePtr =  Graph::NodePtr;

@@ -116,11 +116,13 @@ namespace SGBuilds
         float therium = -1.0f;
     };
 
+    using UID = unsigned;
+
     struct Buff
     {
         SpellID id = 0;
         float startTime = -1.0f;
-        // TODO : find a way to identify the buff caster (shared_ptr<>?)
+        UID caster = ID::NoObject;
     };
 
     class Object
@@ -133,6 +135,7 @@ namespace SGBuilds
         TaskID task = Task::Idle;
         Buff buff = { 0, 0 };
         float completion = 0.0f;
+        UID target = ID::NoObject;
 
         operator ObjectID() const { return id; }
         bool IsIdle() const { return task == Task::Idle; }
@@ -144,14 +147,12 @@ namespace SGBuilds
         virtual ~Object();
 
         ErrorCode ExpandRequirements(std::vector<ObjectID>& requiredBuildings) const;
-        unsigned GetUID() const { return _UID; }
+        UID GetUID() const { return _UID; }
 
-        private:
-            inline static unsigned _NextUID = 0;
-            const unsigned _UID = _NextUID++;
+    private:
+        inline static UID _NextUID = 0;
+        const UID _UID = ++_NextUID;
     };
-
-    using ObjectPtr = std::shared_ptr<Object>;
 
     class Building : public Object
     {
@@ -185,6 +186,11 @@ namespace SGBuilds
         Upgrade(const ObjectID& objectId);
     };
 
+    using ObjectPtr = std::shared_ptr<Object>;
+    using BuildingPtr = std::shared_ptr<Building>;
+    using UnitPtr = std::shared_ptr<Unit>;
+    using UpgradePtr = std::shared_ptr<Upgrade>;
+
     struct Objective
     {
         ObjectID id = 0;
@@ -197,7 +203,7 @@ namespace SGBuilds
     template <class T>
     inline bool ContainsID(const T& container, ObjectID id)
     {
-        auto itr = std::find_if(container.begin(), container.end(), [id](const Object& object) { return object.id == id; });
+        auto itr = std::find_if(container.begin(), container.end(), [id](const ObjectPtr& object) { return object->id == id; });
         return itr != container.end();
     }
 

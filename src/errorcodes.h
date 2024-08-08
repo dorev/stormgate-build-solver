@@ -14,7 +14,8 @@ namespace SGBuilds
     constexpr ErrorCode NotEnoughResources = -8;
     constexpr ErrorCode InvalidRequirements = -9;
     constexpr ErrorCode InvalidDecision = -10;
-    constexpr ErrorCode NotYetImplemented = -99;
+    constexpr ErrorCode NoBuilderAvailable = -11;
+    constexpr ErrorCode NotYetImplemented = -9999;
 }
 
 #define CHECK_ERROR(error) if ((error) != Success) { return error; }

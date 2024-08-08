@@ -10,18 +10,24 @@ namespace SGBuilds
 
     const ObjectID& GameState::GetObjectiveObject() const
     {
-        return _ObjectiveObject;
+        return _ObjectiveId;
     }
 
     void GameState::SetObjectiveObject(const ObjectID& objectiveObject)
     {
-        _ObjectiveObject = objectiveObject;
+        _ObjectiveId = objectiveObject;
     }
 
     ErrorCode GameState::Reset(const Faction& faction)
     {
+        _Buildings.clear();
+        _Units.clear();
+        _Upgrades.clear();
+        _PendingObjects.clear();
+
         *const_cast<Faction*>(&_Faction) = faction;
         _Faction.ResetGameState(*this);
+
         return Success;
     }
 
@@ -50,9 +56,9 @@ namespace SGBuilds
         switch (objectType)
         {
         case ID::Building:
-            for (const Object& object : _Buildings)
+            for (const ObjectPtr& object : _Buildings)
             {
-                if (object.id == objective.id)
+                if (object->id == objective.id)
                 {
                     objectiveCount++;
                 }
@@ -60,9 +66,9 @@ namespace SGBuilds
             break;
 
         case ID::Unit:
-            for (const Object& object : _Units)
+            for (const ObjectPtr& object : _Units)
             {
-                if (object == objective)
+                if (object->id == objective)
                 {
                     objectiveCount++;
                 }
@@ -70,9 +76,9 @@ namespace SGBuilds
             break;
 
         case ID::Upgrade:
-            for (const Object& object : _Upgrades)
+            for (const ObjectPtr& object : _Upgrades)
             {
-                if (object == objective)
+                if (object->id == objective)
                 {
                     objectiveCount++;
                 }
@@ -155,17 +161,17 @@ namespace SGBuilds
         return _Time;
     }
 
-    const std::vector<Building>& GameState::GetBuildings() const
+    const std::vector<BuildingPtr>& GameState::GetBuildings() const
     {
         return _Buildings;
     }
 
-    const std::vector<Unit>& GameState::GetUnits() const
+    const std::vector<UnitPtr>& GameState::GetUnits() const
     {
         return _Units;
     }
 
-    const std::vector<Upgrade>& GameState::GetUpgrades() const
+    const std::vector<UpgradePtr>& GameState::GetUpgrades() const
     {
         return _Upgrades;
     }
@@ -196,9 +202,9 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::CanAfford(ObjectID id, bool& canAfford)
+    ErrorCode GameState::CanAfford(ObjectID objectId, bool& canAfford)
     {
-        GET_PROTOTYPE(object, id);
+        GET_PROTOTYPE(object, objectId);
         return CanAfford(object, canAfford);
     }
 
@@ -229,9 +235,9 @@ namespace SGBuilds
         if (IsUnit(object) || IsUpgrade(object))
         {
             ObjectID producerBuildingId = static_cast<const Unit&>(object).producer;
-            for (const Building& building : _Buildings)
+            for (const BuildingPtr& building : _Buildings)
             {
-                if (building == producerBuildingId && building.IsIdle())
+                if (building->id == producerBuildingId && building->IsIdle())
                 {
                     canProduce = true;
                     break;
@@ -259,49 +265,66 @@ namespace SGBuilds
         return Success;
     }
 
-    ErrorCode GameState::Buy(ObjectID id)
+    ErrorCode GameState::Buy(const ObjectID& objectId, ObjectPtr& object)
     {
-        GET_PROTOTYPE(object, id);
+        object = nullptr;
 
-        if (object.cost.luminite >= _Luminite || object.cost.therium >= _Therium)
+        GET_PROTOTYPE(objectPrototype, objectId);
+
+        if (objectPrototype.cost.luminite >= _Luminite || objectPrototype.cost.therium >= _Therium)
         {
             return NotEnoughResources;
         }
 
-        _Luminite -= object.cost.luminite;
-        _Therium -= object.cost.therium;
+        _Luminite -= objectPrototype.cost.luminite;
+        _Therium -= objectPrototype.cost.therium;
 
-        if (IsBuilding(id))
-        {
-            _Faction.StartBuildingProduction(*this);
-        }
+        ErrorCode result = _Faction.StartProduction(*this, objectId, object);
+        CHECK_ERROR(result);
 
-        _PendingObjects.emplace_back(std::make_shared<Object>(object));
+        _PendingObjects.emplace_back(object);
 
         return Success;
     }
 
-    int GameState::GetCurrentPopulationCap() const
+    ErrorCode GameState::Give(const ObjectID& objectId, ObjectPtr& object)
     {
-        return _Faction.GetPopulationCap(*this);
-    }
+        object = nullptr;
 
-    int GameState::LuminiteIsSaturated() const
-    {
-        return _Faction.LuminiteSaturated(*this);
+        GET_PROTOTYPE(objectPrototype, objectId);
+
+        switch (GetObjectType(objectId))
+        {
+        case ID::Building:
+            object = _Buildings.emplace_back(std::make_shared<Building>(objectId));
+            break;
+
+        case ID::Unit:
+            object = _Units.emplace_back(std::make_shared<Unit>(objectId));
+            break;
+
+        case ID::Upgrade:
+            object = _Upgrades.emplace_back(std::make_shared<Upgrade>(objectId));
+            break;
+
+        default:
+            return InvalidObjectType;
+        }
+
+        return Success;
     }
 
     ErrorCode GameState::UpdateResources()
     {
-        for (const Unit& unit : _Units)
+        for (const UnitPtr& unit : _Units)
         {
-            switch (unit.task)
+            switch (unit->task)
             {
             case Task::CollectingLuminite:
-                _Luminite += unit.luminitePerSecond;
+                _Luminite += unit->luminitePerSecond;
                 break;
             case Task::CollectingTherium:
-                _Therium += unit.theriumPerSecond;
+                _Therium += unit->theriumPerSecond;
                 break;
             default:
                 break;
@@ -318,29 +341,61 @@ namespace SGBuilds
             ObjectPtr object = *itr;
 
             float productionBuffFactor = 1.0f;
-            if (object->buff.id == ID::SolarHabitatBuff)
+
+            if (IsUnit(object->id))
             {
-                productionBuffFactor += 0.25;
+                if (object->buff.id == ID::SolarHabitatBuff)
+                {
+                    productionBuffFactor += 0.25;
+                }
             }
 
-            // NOTE: What's the production buff if more workers come to help build?
+            if (IsBuilding(object->id))
+            {
+                int buildersOnBuilding = 0;
+                for (const UnitPtr& unit : _Units)
+                {
+                    if (unit->id == ID::Bob && unit->task == Task::CompletingBuilding && unit->target == object->GetUID())
+                    {
+                        buildersOnBuilding++;
+                    }
+                }
+
+                if (--buildersOnBuilding >= 1)
+                {
+                    // TODO: confirm Bob speed buff, I have no idea how much it is honestly
+                    productionBuffFactor += 0.25;
+                }
+            }
 
             object->completion += (TimeIncrementPerUpdate / object->cost.time) * productionBuffFactor;
 
             if (object->completion >= 1.0f)
             {
-                // CATCH UP HERE
-                // Add to the relevant GameState vector
-                switch (GetObjectType(*object))
+                ErrorCode result = _Faction.FinishProduction(*this, object);
+                CHECK_ERROR(result);
+
+                switch (GetObjectType(object->id))
                 {
                 case ID::Building:
-                    //_Buildings.emplace_back();
-                case ID::Unit:
-                case ID::Upgrade:
+                    _Buildings.emplace_back(std::static_pointer_cast<Building>(object));
                     break;
+
+                case ID::Unit:
+                    _Units.emplace_back(std::static_pointer_cast<Unit>(object));
+                    break;
+
+                case ID::Upgrade:
+                    _Upgrades.emplace_back(std::static_pointer_cast<Upgrade>(object));
+                    break;
+
+                default:
+                    return InvalidObjectType;
                 }
 
                 // Remove pending object from this vector
+                // Converting reverse iterator to regular iterator
+                _PendingObjects.erase(--itr.base());
             }
         }
 

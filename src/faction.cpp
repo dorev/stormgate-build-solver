@@ -62,21 +62,23 @@ namespace SGBuilds
         return false;
     }
 
-    ErrorCode Faction::StartBuildingProduction(GameState& state) const
-    {
-        (void) state;
-        return NotYetImplemented;
-    }
-
-    ErrorCode Faction::FinishBuildingProduction(GameState& state) const
-    {
-        (void) state;
-        return NotYetImplemented;
-    }
-
     bool Faction::HasBuilderAvailable(const GameState& state) const
     {
         (void) state;
         return false;
+    }
+
+    ErrorCode Faction::StartProduction(GameState& state, const ObjectID& buildingId, ObjectPtr& object) const
+    {
+        (void) state;
+        (void) buildingId;
+        (void) object;
+        return NotYetImplemented;
+    }
+
+    ErrorCode Faction::FinishProduction(GameState& state, ObjectPtr pendingObject) const
+    {
+        (void) state;
+        return NotYetImplemented;
     }
 }

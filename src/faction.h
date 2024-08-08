@@ -20,9 +20,9 @@ namespace SGBuilds
         virtual const SolverStrategy& GetSolverStrategy() const;
         virtual int GetPopulationCap(const GameState& state) const;
         virtual bool LuminiteSaturated(const GameState& state) const;
-        virtual ErrorCode StartBuildingProduction(GameState& state) const;
-        virtual ErrorCode FinishBuildingProduction(GameState& state) const;
         virtual bool HasBuilderAvailable(const GameState& state) const;
+        virtual ErrorCode StartProduction(GameState& state, const ObjectID& objectId, ObjectPtr& object) const;
+        virtual ErrorCode FinishProduction(GameState& state, ObjectPtr pendingObject) const;
     };
 
     class Vanguard : public Faction
@@ -32,9 +32,9 @@ namespace SGBuilds
         const SolverStrategy& GetSolverStrategy() const override;
         int GetPopulationCap(const GameState& state) const override;
         bool LuminiteSaturated(const GameState& state) const override;
-        ErrorCode StartBuildingProduction(GameState& state) const override;
-        ErrorCode FinishBuildingProduction(GameState& state) const override;
         bool HasBuilderAvailable(const GameState& state) const override;
+        ErrorCode StartProduction(GameState& state, const ObjectID& objectId, ObjectPtr& object) const override;
+        ErrorCode FinishProduction(GameState& state, ObjectPtr pendingObject) const override;
     };
 
     class Infernal : public Faction
