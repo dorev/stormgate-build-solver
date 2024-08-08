@@ -114,29 +114,34 @@ namespace SGBuilds
 
     ErrorCode VanguardStrategy::GetObjectivesToProduceWorker(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
-        // A worker for luminite
-        // A worker for therium
-        // Set their status appropriately in the pending object
         (void) state;
         (void) objectives;
-        (void) objects;
-        return NotYetImplemented;
+
+        UnitPtr luminiteBob = std::make_shared<Unit>(ID::Bob);
+        luminiteBob->task = Task::CollectingLuminite;
+        objects.emplace_back(luminiteBob);
+
+        UnitPtr theriumBob = std::make_shared<Unit>(ID::Bob);
+        theriumBob->task = Task::CollectingTherium;
+        objects.emplace_back(theriumBob);
+
+        return Success;
     }
 
     ErrorCode VanguardStrategy::GetObjectivesToProduceUpgrade(const GameState& state, const std::vector<Objective>& objectives, std::vector<ObjectPtr>& objects) const
     {
         for (const Objective& buildObjective : objectives)
         {
-            ObjectID id = buildObjective.id;
-            if (IsUpgrade(id) && !ContainsID(state.GetUpgrades(), id))
+            ObjectID upgradeId = buildObjective.id;
+            if (IsUpgrade(upgradeId) && !ContainsID(state.GetUpgrades(), upgradeId))
             {
                 bool techAllows;
-                ErrorCode result = state.TechAllows(id, techAllows);
+                ErrorCode result = state.TechAllows(upgradeId, techAllows);
                 CHECK_ERROR(result);
 
                 if (techAllows)
                 {
-                    objects.emplace_back(std::make_shared<Upgrade>(id));
+                    objects.emplace_back(std::make_shared<Upgrade>(upgradeId));
                 }
             }
         }
